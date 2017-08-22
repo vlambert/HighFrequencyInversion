@@ -10,7 +10,7 @@ clear all;
 close all;
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Aug21/FourSources/';
+outdir = 'test/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -54,17 +54,17 @@ xycenters = [cx,cy];
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                Construct station network               %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-nsta = 200;             % Number of stations
+nsta = 20;             % Number of stations
 R = [60];              % Radius of rings in degrees
-nDiv = 4;              % Number of subarrays
+nDiv = 1;              % Number of subarrays
 
 arrayPop = nsta / nDiv;    % Subarray populations are even
 
 % Azimuthal ranges for each subarray
-minA1 = 0;             maxA1 = 1/5*pi; 
-minA2 = 4/5*pi;        maxA2 = 5/5*pi;
-minA3 = 6/5*pi;        maxA3 = 7/5*pi;
-minA4 = 8/5*pi;        maxA4 = 9/5*pi;
+minA1 = 0;             maxA1 = 2*pi; 
+% minA2 = 4/5*pi;        maxA2 = 5/5*pi;
+% minA3 = 6/5*pi;        maxA3 = 7/5*pi;
+% minA4 = 8/5*pi;        maxA4 = 9/5*pi;
 % minA5 = 4/5*pi;        maxA5 = pi;
 % minA6 = pi;            maxA6 = 6/5*pi; 
 % minA7 = 6/5*pi;        maxA7 = 7/5*pi;
@@ -73,9 +73,9 @@ minA4 = 8/5*pi;        maxA4 = 9/5*pi;
 % minA10 = 9/5*pi;       maxA10 = 2*pi;
 
 range1 = maxA1 - minA1; az_res1 = range1/arrayPop;
-range2 = maxA2 - minA2; az_res2 = range2/arrayPop;
-range3 = maxA3 - minA3; az_res3 = range3/arrayPop;
-range4 = maxA4 - minA4; az_res4 = range4/arrayPop;
+% range2 = maxA2 - minA2; az_res2 = range2/arrayPop;
+% range3 = maxA3 - minA3; az_res3 = range3/arrayPop;
+% range4 = maxA4 - minA4; az_res4 = range4/arrayPop;
 % range5 = maxA5 - minA5; az_res5 = range5/arrayPop;
 % range6 = maxA6 - minA6; az_res6 = range6/arrayPop;
 % range7 = maxA7 - minA7; az_res7 = range7/arrayPop;
@@ -84,9 +84,9 @@ range4 = maxA4 - minA4; az_res4 = range4/arrayPop;
 % range10 = maxA10 - minA10; az_res10 = range10/arrayPop;
 
 azi1 = (minA1:az_res1:maxA1)'; azi1 = azi1(1:end-1);
-azi2 = (minA2:az_res2:maxA2)'; azi2 = azi2(1:end-1);
-azi3 = (minA3:az_res3:maxA3)'; azi3 = azi3(1:end-1);
-azi4 = (minA4:az_res4:maxA4)'; azi4 = azi4(1:end-1);
+% azi2 = (minA2:az_res2:maxA2)'; azi2 = azi2(1:end-1);
+% azi3 = (minA3:az_res3:maxA3)'; azi3 = azi3(1:end-1);
+% azi4 = (minA4:az_res4:maxA4)'; azi4 = azi4(1:end-1);
 % azi5 = (minA5:az_res5:maxA5)'; azi5 = azi5(1:end-1);
 % azi6 = (minA6:az_res6:maxA6)'; azi6 = azi6(1:end-1);
 % azi7 = (minA7:az_res7:maxA7)'; azi7 = azi7(1:end-1);
@@ -94,7 +94,7 @@ azi4 = (minA4:az_res4:maxA4)'; azi4 = azi4(1:end-1);
 % azi9 = (minA9:az_res9:maxA9)'; azi9 = azi9(1:end-1);
 % azi10 = (minA10:az_res10:maxA10)'; azi10 = azi10(1:end-1);
 
-azi = [azi1;azi2;azi3;azi4];%azi5;azi6;azi7;azi8;azi9;azi10];
+azi = [azi1];%azi2;azi3;azi4];%azi5;azi6;azi7;azi8;azi9;azi10];
 % minA = 0;
 % maxA = 360;
 % range =maxA - minA;
@@ -126,9 +126,9 @@ y_st=R.*cos(th_st');
 
 % Set up coherent array divisions
 Div1 = find( az >=minA1  & az <maxA1);
-Div2 = find( az >=minA2  & az <maxA2);
-Div3 = find( az >=minA3  & az <maxA3);
-Div4 = find( az >=minA4  & az <maxA4);
+% Div2 = find( az >=minA2  & az <maxA2);
+% Div3 = find( az >=minA3  & az <maxA3);
+% Div4 = find( az >=minA4  & az <maxA4);
 % Div5 = find( az >=minA5  & az <maxA5);
 % Div6 = find( az >=minA6  & az <maxA6);
 % Div7 = find( az >=minA7  & az <maxA7);
@@ -136,14 +136,14 @@ Div4 = find( az >=minA4  & az <maxA4);
 % Div9 = find( az >=minA9  & az <maxA9);
 % Div10= find( az >=minA10 & az <maxA10);
 
-Div = [Div1;Div2;Div3;Div4];%Div5;Div6;Div7;Div8;Div9;Div10];
-DivPop = [0;length(Div1); length(Div2);length(Div3);...
-          length(Div4)];% length(Div5);length(Div6); length(Div7);...
+Div = [Div1];%Div2;Div3;Div4];%Div5;Div6;Div7;Div8;Div9;Div10];
+DivPop = [0;length(Div1)];% length(Div2);length(Div3);...
+          %length(Div4)];% length(Div5);length(Div6); length(Div7);...
           %length(Div8); length(Div9);length(Div10)];
 
 %% plot station map (Figure 1)
 figure(1);clf;
-set(gcf,'Position',[1 scrsz(4)*2/3 scrsz(3)/4 scrsz(4)/3]);
+set(gcf,'Position',[1 scrsz(4)*2/3 530 650]);
 hold on;
 az0=linspace(0,2*pi,100);
 plot(EVLO+25*cos(az0),EVLA+25*sin(az0),'-k');
@@ -152,7 +152,7 @@ plot(EVLO+x_st/deg2km,EVLA+y_st/deg2km,'b^');
 plot(lon_ev,lat_ev,'rp');
 xlabel('Longitude')
 ylabel('Latitude')
-axis equal; box on;
+axis equal tight; box on;
 text(0.15e4,-0.1e4,'25^{o}','FontSize',14)
 text(0.75e4,-0.8e4,'95^{o}','FontSize',14)
 set(gca,'FontSize',14)
@@ -223,13 +223,12 @@ end
 %             Plot waveform versus azimuth               %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 figure(2);clf
-set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 scrsz(3)/4 scrsz(4)/2]);
+set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 530 650]);
 subplot(5,1,1:4);
 h=pcolor(t,th_st/pi,Data);
 ylim([0 2])
 set(h,'EdgeColor','none');
 ylabel('station azimuth \theta (\pi)')
-xlabel('time (s)')
 set(gca,'FontSize',14)
 
 % square stack of waveforms, smoothed
@@ -237,8 +236,7 @@ subplot(5,1,5);
 event1=sum(Data,1);
 event1=smooth(event1.^2,nsmooth); % square stacking smoothing
 plot(t,event1);
-title('Global stack')
-text(9,0.3,'Square stacking','FontSize',12);
+xlabel('time (s)')
 xlim([t(1) t(end)])
 set(gca,'FontSize',14)
 saveas(gcf,[outdir,'AzimuthalDistribution'],'png')
@@ -371,7 +369,7 @@ if qy < 3
 else
     qx = ceil((nDiv+1)/3);
 end
-
+set(gcf,'Position',[1 1 qy*425 qx*280])
 for i = 1:nDiv
    subplot(qx,qy,i)
    grid = reshape(specPower(i,:),nybp,nxbp);
@@ -406,6 +404,7 @@ for i = 1:nsta
 end
 
 figure(6);clf;
+set(gcf,'Position',[1 1 1140 nDiv*190])
 for i = 1:nDiv
     popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
     
@@ -468,7 +467,9 @@ Tau = zeros(nDiv,nSu,nf);
 TauM = zeros(nDiv,nSu,nf);
 
 figure(7);clf;
+set(gcf,'Position',[1 1 nDiv*350 nSu*120])
 figure(8);clf;
+set(gcf,'Position',[1 1 nDiv*350 nSu*120])
 figy = nDiv;
 figx = nSu;
 for i = 1:nDiv
@@ -520,3 +521,9 @@ figure(7);
 saveas(gcf,[outdir,'SourceTime_MG'],'png')
 figure(8);
 saveas(gcf,[outdir,'SourceTime_M'],'png')
+
+outT = [subTimeR',subTime2R',subTime',subTime2',subTimeM',subTime2M'];
+TimeFile = fopen([outdir,'SourceTimeInfo.txt'],'w');
+fprintf(TimeFile,'Mdiff & Adiff & MG & AG  & Mraw & Araw \n');
+fprintf(TimeFile,'%.3f %.3f %.3f %.3f %.3f %.3f \n',outT');
+fclose(TimeFile);

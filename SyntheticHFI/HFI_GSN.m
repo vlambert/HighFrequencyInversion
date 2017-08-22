@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Aug21/FourSources/';
+outdir = 'Aug22/FourSources/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -114,7 +114,7 @@ DivColor = ['k','r','b','m','g'];%,'y']
           
 %% plot station map (Figure 1)
 figure(1);clf;
-set(gcf,'Position',[1 scrsz(4)*2/3 scrsz(3)/4 scrsz(4)/3]);
+set(gcf,'Position',[1 scrsz(4)*2/3 530 650]);
 hold on;
 az0=linspace(0,2*pi,100);
 di = 0:95;
@@ -205,7 +205,7 @@ end
 %             Plot waveform versus azimuth               %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 figure(2);clf
-set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 scrsz(3)/4 scrsz(4)/2]);
+set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 530 650]);
 subplot(5,1,1:4);
 h=pcolor(t,th_st/pi,Data);
 ylim([0 2])
@@ -353,7 +353,7 @@ if qy < 3
 else
     qx = ceil((nDiv+1)/3);
 end
-
+set(gcf,'Position',[1 1 qy*425 qx*280])
 for i = 1:nDiv
    subplot(qx,qy,i)
    grid = reshape(specPower(i,:),nybp,nxbp);
@@ -388,6 +388,7 @@ for i = 1:nsta
 end
 
 figure(6);clf;
+set(gcf,'Position',[1 1 1140 nDiv*190])
 for i = 1:nDiv
     popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
     
@@ -450,7 +451,9 @@ Tau = zeros(nDiv,nSu,nf);
 TauM = zeros(nDiv,nSu,nf);
 
 figure(7);clf;
+set(gcf,'Position',[1 1 nDiv*350 nSu*120])
 figure(8);clf;
+set(gcf,'Position',[1 1 nDiv*350 nSu*120])
 figy = nDiv;
 figx = nSu;
 for i = 1:nDiv
@@ -502,3 +505,9 @@ figure(7);
 saveas(gcf,[outdir,'SourceTime_MG'],'png')
 figure(8);
 saveas(gcf,[outdir,'SourceTime_M'],'png')
+
+outT = [subTimeR',subTime2R',subTime',subTime2',subTimeM',subTime2M'];
+TimeFile = fopen([outdir,'SourceTimeInfo.txt'],'w');
+fprintf(TimeFile,'Mdiff & Adiff & MG & AG  & Mraw & Araw');
+fprintf(TimeFile,'%.3f %.3f %.3f %.3f %.3f %.3f \n',outT);
+fclose(TimeFile);
