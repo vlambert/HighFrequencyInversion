@@ -140,7 +140,7 @@ text(0.75e4,-0.8e4,'95^{o}','FontSize',14)
 set(gca,'FontSize',14)
 set(gca,'color','none')
 title('Station Distribution')
-saveas(gcf,[outdir,'StationMap'],'png')
+%saveas(gcf,[outdir,'StationMap'],'png')
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %              Make Synthetic Seismograms                %
@@ -211,7 +211,6 @@ h=pcolor(t,th_st/pi,Data);
 ylim([0 2])
 set(h,'EdgeColor','none');
 ylabel('station azimuth \theta (\pi)')
-xlabel('time (s)')
 set(gca,'FontSize',14)
 
 % square stack of waveforms, smoothed
@@ -219,8 +218,7 @@ subplot(5,1,5);
 event1=sum(Data,1);
 event1=smooth(event1.^2,nsmooth); % square stacking smoothing
 plot(t,event1);
-title('Global stack')
-text(9,0.3,'Square stacking','FontSize',12);
+tlabel('time (s)');
 xlim([t(1) t(end)])
 set(gca,'FontSize',14)
 saveas(gcf,[outdir,'AzimuthalDistribution'],'png')
