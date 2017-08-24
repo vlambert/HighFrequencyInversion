@@ -522,8 +522,21 @@ saveas(gcf,[outdir,'SourceTime_MG'],'png')
 figure(8);
 saveas(gcf,[outdir,'SourceTime_M'],'png')
 
-outT = [subTimeR',subTime2R',subTime',subTime2',subTimeM',subTime2M'];
+% Median subevent time estimate
+subTime = reshape(subTime,nDiv*nSu,1);
+subTimeM = reshape(subTimeM,nDiv*nSu,1);
+subTimeR = reshape(subTimeR,nDiv*nSu,1);
+
+% Mean subevent time estimate
+subTime2 = reshape(subTime2,nDiv*nSu,1);
+subTime2M = reshape(subTime2M,nDiv*nSu,1);
+subTime2R = reshape(subTime2R,nDiv*nSu,1);
+
+outT = [subTimeR,subTime2R,subTime,subTime2,subTimeM,subTime2M];
 TimeFile = fopen([outdir,'SourceTimeInfo.txt'],'w');
 fprintf(TimeFile,'Mdiff & Adiff & MG & AG  & Mraw & Araw \n');
-fprintf(TimeFile,'%.3f %.3f %.3f %.3f %.3f %.3f \n',outT');
+for i = 1:nSu
+    fprintf(TimeFile,'Subevent %d \n',i);
+    fprintf(TimeFile,'%.3f %.3f %.3f %.3f %.3f %.3f \n',outT((i-1)*nDiv+1:i*nDiv,:)');
+end
 fclose(TimeFile);
