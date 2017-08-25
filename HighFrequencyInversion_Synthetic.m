@@ -325,8 +325,8 @@ parfor f = 1:nf        % parallelized over frequency
             tij =interp1(P_trav(:,1),P_trav(:,2),dis,'linear','extrap');
             
             % Fill kernels
-            K1(popu,i) = (exp(2i*pi*f0*(t0j1(popu) - tij)));
-            Kf(popu ,(d-1)*ns+i) = (exp(2i*pi*f0*(t0j1(popu) - tij)));
+            K1(Div(popu),i) = (exp(2i*pi*f0*(t0j1(Div(popu)) - tij)));
+            Kf(Div(popu) ,(d-1)*ns+i) = (exp(2i*pi*f0*(t0j1(Div(popu)) - tij)));
         end
     end
     

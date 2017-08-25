@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Aug22/FourSources/';
+outdir = 'Aug22/FourSources/TryUniform2Div/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -59,14 +59,14 @@ xycenters = [cx,cy];
 %                Construct station network               %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 
-nDiv = 5;              % Number of subarrays
+nDiv = 2;              % Number of subarrays
 
 % Azimuthal ranges for each subarray
-minA1 = 1/6*pi;        maxA1 = 1/2*pi; 
-minA2 = 1/2*pi;        maxA2 = 8/9*pi;
-minA3 = 8/9*pi;        maxA3 = 4/3*pi;
-minA4 = 4/3*pi;        maxA4 = 5/3*pi;
-minA5 = 5/3*pi;        maxA5 = 1/6*pi;
+minA1 = 0*pi;        maxA1 = pi; 
+minA2 = pi;          maxA2 = 2*pi;
+% minA3 = 8/9*pi;        maxA3 = 4/3*pi;
+% minA4 = 4/3*pi;        maxA4 = 5/3*pi;
+% minA5 = 5/3*pi;        maxA5 = 1/6*pi;
 % minA6 = pi;            maxA6 = 6/5*pi; 
 % minA7 = 6/5*pi;        maxA7 = 7/5*pi;
 % minA8 = 7/5*pi;        maxA8 = 8/5*pi;
@@ -97,20 +97,20 @@ y_st=R'.*cos(th_st);
 % Set up coherent array divisions
 Div1 = find( th_st >=minA1  & th_st <maxA1);
 Div2 = find( th_st >=minA2  & th_st <maxA2);
-Div3 = find( th_st >=minA3  & th_st <maxA3);
-Div4 = find( th_st >=minA4  & th_st <maxA4);
-Div5 = find( th_st >=minA5  | th_st <maxA5);
+%Div3 = find( th_st >=minA3  & th_st <maxA3);
+%Div4 = find( th_st >=minA4  & th_st <maxA4);
+%Div5 = find( th_st >=minA5  | th_st <maxA5);
 % Div6 = find( az >=minA6  & az <maxA6);
 % Div7 = find( az >=minA7  & az <maxA7);
 % Div8 = find( az >=minA8  & az <maxA8);
 % Div9 = find( az >=minA9  & az <maxA9);
 % Div10= find( az >=minA10 & az <maxA10);
 
-Div = [Div1;Div2;Div3;Div4;Div5];%Div6;Div7;Div8;Div9;Div10];
-DivPop = [0;length(Div1); length(Div2);length(Div3);...
-          length(Div4); length(Div5)];%length(Div6); length(Div7);...
+Div = [Div1;Div2];%Div3;Div4;Div5];%Div6;Div7;Div8;Div9;Div10];
+DivPop = [0;length(Div1); length(Div2)];%length(Div3);...
+          %length(Div4); length(Div5)];%length(Div6); length(Div7);...
           %length(Div8); length(Div9);length(Div10)];
-DivColor = ['k','r','b','m','g'];%,'y']
+DivColor = ['k';'r'];%,'b','m','g'];%,'y']
           
 %% plot station map (Figure 1)
 figure(1);clf;
@@ -121,10 +121,10 @@ di = 0:95;
 plot(EVLO+25*sin(az0),EVLA+25*cos(az0),'-k');
 plot(EVLO+95*sin(az0),EVLA+95*cos(az0),'-r');
 plot(EVLO+di*sin(minA1),EVLA+di*cos(minA1),'.k');
-plot(EVLO+di*sin(minA2),EVLA+di*cos(minA2),'.r');
-plot(EVLO+di*sin(minA3),EVLA+di*cos(minA3),'.b');
-plot(EVLO+di*sin(minA4),EVLA+di*cos(minA4),'.m');
-plot(EVLO+di*sin(minA5),EVLA+di*cos(minA5),'.g');
+% plot(EVLO+di*sin(minA2),EVLA+di*cos(minA2),'.r');
+% plot(EVLO+di*sin(minA3),EVLA+di*cos(minA3),'.b');
+% plot(EVLO+di*sin(minA4),EVLA+di*cos(minA4),'.m');
+% plot(EVLO+di*sin(minA5),EVLA+di*cos(minA5),'.g');
 
 for d=1:nDiv
     popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
@@ -141,6 +141,7 @@ set(gca,'FontSize',14)
 set(gca,'color','none')
 title('Station Distribution')
 saveas(gcf,[outdir,'StationMap'],'png')
+saveas(gcf,[outdir,'StationMap'],'fig')
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %              Make Synthetic Seismograms                %
@@ -218,10 +219,11 @@ subplot(5,1,5);
 event1=sum(Data,1);
 event1=smooth(event1.^2,nsmooth); % square stacking smoothing
 plot(t,event1);
-tlabel('time (s)');
+xlabel('time (s)');
 xlim([t(1) t(end)])
 set(gca,'FontSize',14)
 saveas(gcf,[outdir,'AzimuthalDistribution'],'png')
+saveas(gcf,[outdir,'AzimuthalDistribution'],'fig')
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %        Filter and Convert to Frequency Domain          %
@@ -367,6 +369,7 @@ colorbar
 title(sprintf('Combined Power'))
 axis equal tight
 saveas(gcf,[outdir,'SubeventLocation'],'png')
+saveas(gcf,[outdir,'SubeventLocation'],'fig')
 
 % Cumulate Spectral Power
 CumSpecPower = sum(specPower,1);
@@ -415,6 +418,7 @@ for i = 1:nDiv
     xlim([t(tw) t(end)])
 end
 saveas(gcf,[outdir,'Waveforms'],'png')
+saveas(gcf,[outdir,'Waveforms'],'fig')
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                 Source Time Extraction                 %
@@ -501,8 +505,10 @@ end
  end
 figure(7);
 saveas(gcf,[outdir,'SourceTime_MG'],'png')
+saveas(gcf,[outdir,'SourceTime_MG'],'fig')
 figure(8);
 saveas(gcf,[outdir,'SourceTime_M'],'png')
+saveas(gcf,[outdir,'SourceTime_M'],'fig')
 
 % Median subevent time estimate
 subTime = reshape(subTime,nDiv*nSu,1);
