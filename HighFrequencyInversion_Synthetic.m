@@ -10,20 +10,20 @@ clear all;
 close all;
 
 scrsz=get(0,'ScreenSize');
-outdir = 'test/';
+outdir = 'Homogeneous_2sub_60st_0_2Hz_stationshift_notfull/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
 
 % Hypocenter location (degrees)
-EVLA =0;
-EVLO =0;
+EVLA=54.874;
+EVLO=153.281;
 EVDP=607;
 
 %subevent locations and times
-x_ev=[0 -1 9  10];% 20 25 ]./2; % km
-y_ev=[0 7 6  4];% 10 10 ]./2; % km
-t_ev=[0 3  5   6 ];%10 12];     % seconds
+x_ev=[0 1 8    10];% 20 25 ]./2; % km
+y_ev=[0 4 6    7];% 10 10 ]./2; % km
+t_ev=[0 3  7   9 ];%10 12];     % seconds
 m_ev=[1 1  1   1];%  1  1];     % moment normalized to event 1
 n_ev=length(x_ev);
 
@@ -54,16 +54,16 @@ xycenters = [cx,cy];
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                Construct station network               %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-nsta = 20;             % Number of stations
+nsta = 60;             % Number of stations
 R = [60];              % Radius of rings in degrees
-nDiv = 1;              % Number of subarrays
+nDiv = 2;              % Number of subarrays
 
 arrayPop = nsta / nDiv;    % Subarray populations are even
 
 % Azimuthal ranges for each subarray
-minA1 = 0;             maxA1 = 2*pi; 
-% minA2 = 4/5*pi;        maxA2 = 5/5*pi;
-% minA3 = 6/5*pi;        maxA3 = 7/5*pi;
+minA1 = 1/2*pi;        maxA1 = 3/4*pi; 
+minA2 = 3/2*pi;         maxA2 = 7/4*pi;
+%minA3 = 6/5*pi;        maxA3 = 7/5*pi;
 % minA4 = 8/5*pi;        maxA4 = 9/5*pi;
 % minA5 = 4/5*pi;        maxA5 = pi;
 % minA6 = pi;            maxA6 = 6/5*pi; 
@@ -73,7 +73,7 @@ minA1 = 0;             maxA1 = 2*pi;
 % minA10 = 9/5*pi;       maxA10 = 2*pi;
 
 range1 = maxA1 - minA1; az_res1 = range1/arrayPop;
-% range2 = maxA2 - minA2; az_res2 = range2/arrayPop;
+range2 = maxA2 - minA2; az_res2 = range2/arrayPop;
 % range3 = maxA3 - minA3; az_res3 = range3/arrayPop;
 % range4 = maxA4 - minA4; az_res4 = range4/arrayPop;
 % range5 = maxA5 - minA5; az_res5 = range5/arrayPop;
@@ -84,7 +84,7 @@ range1 = maxA1 - minA1; az_res1 = range1/arrayPop;
 % range10 = maxA10 - minA10; az_res10 = range10/arrayPop;
 
 azi1 = (minA1:az_res1:maxA1)'; azi1 = azi1(1:end-1);
-% azi2 = (minA2:az_res2:maxA2)'; azi2 = azi2(1:end-1);
+azi2 = (minA2:az_res2:maxA2)'; azi2 = azi2(1:end-1);
 % azi3 = (minA3:az_res3:maxA3)'; azi3 = azi3(1:end-1);
 % azi4 = (minA4:az_res4:maxA4)'; azi4 = azi4(1:end-1);
 % azi5 = (minA5:az_res5:maxA5)'; azi5 = azi5(1:end-1);
@@ -94,7 +94,7 @@ azi1 = (minA1:az_res1:maxA1)'; azi1 = azi1(1:end-1);
 % azi9 = (minA9:az_res9:maxA9)'; azi9 = azi9(1:end-1);
 % azi10 = (minA10:az_res10:maxA10)'; azi10 = azi10(1:end-1);
 
-azi = [azi1];%azi2;azi3;azi4];%azi5;azi6;azi7;azi8;azi9;azi10];
+azi = [azi1;azi2];%azi3;azi4];%azi5;azi6;azi7;azi8;azi9;azi10];
 % minA = 0;
 % maxA = 360;
 % range =maxA - minA;
@@ -126,7 +126,7 @@ y_st=R.*cos(th_st');
 
 % Set up coherent array divisions
 Div1 = find( az >=minA1  & az <maxA1);
-% Div2 = find( az >=minA2  & az <maxA2);
+Div2 = find( az >=minA2  & az <maxA2);
 % Div3 = find( az >=minA3  & az <maxA3);
 % Div4 = find( az >=minA4  & az <maxA4);
 % Div5 = find( az >=minA5  & az <maxA5);
@@ -136,8 +136,8 @@ Div1 = find( az >=minA1  & az <maxA1);
 % Div9 = find( az >=minA9  & az <maxA9);
 % Div10= find( az >=minA10 & az <maxA10);
 
-Div = [Div1];%Div2;Div3;Div4];%Div5;Div6;Div7;Div8;Div9;Div10];
-DivPop = [0;length(Div1)];% length(Div2);length(Div3);...
+Div = [Div1;Div2];%Div3;Div4];%Div5;Div6;Div7;Div8;Div9;Div10];
+DivPop = [0;length(Div1); length(Div2)];%length(Div3);...
           %length(Div4)];% length(Div5);length(Div6); length(Div7);...
           %length(Div8); length(Div9);length(Div10)];
 
@@ -159,6 +159,7 @@ set(gca,'FontSize',14)
 set(gca,'color','none')
 title('Station Distribution')
 saveas(gcf,[outdir,'StationMap'],'png')
+saveas(gcf,[outdir,'StationMap'],'fig')
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %              Make Synthetic Seismograms                %
@@ -240,12 +241,13 @@ xlabel('time (s)')
 xlim([t(1) t(end)])
 set(gca,'FontSize',14)
 saveas(gcf,[outdir,'AzimuthalDistribution'],'png')
+saveas(gcf,[outdir,'AzimuthalDistribution'],'fig')
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %        Filter and Convert to Frequency Domain          %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 fnyq = 1/dt/2;      % Nyquist frequency
-lowF  = 1e-6;       % Hz
+lowF  = 0.2;       % Hz
 highF = 8.0;        % Hz
 
 DataFilt = Data;
@@ -343,7 +345,7 @@ parfor f = 1:nf        % parallelized over frequency
     tmpspecPower = zeros(nDiv,ns);
     for d = 1:nDiv
         popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
-        Ktemp = K1(popu,:);
+        Ktemp = K1(Div(popu),:);
         for s = 1:ns
             mmtmp(d,s) = m((d-1)*ns+s);
             tmp = Ktemp(:,s)*mmtmp(d,s);
@@ -385,6 +387,7 @@ colorbar
 title(sprintf('Combined Power'))
 axis equal tight
 saveas(gcf,[outdir,'SubeventLocation'],'png')
+saveas(gcf,[outdir,'SubeventLocation'],'fig')
 
 % Cumulate Spectral Power
 CumSpecPower = sum(specPower,1);
@@ -433,6 +436,7 @@ for i = 1:nDiv
     xlim([t(tw) t(end)])
 end
 saveas(gcf,[outdir,'Waveforms'],'png')
+saveas(gcf,[outdir,'Waveforms'],'fig')
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                 Source Time Extraction                 %
@@ -492,7 +496,7 @@ end
  
 firstS = zeros(nDiv,1);
 for i = 1:nDiv
-    firstS(i) = find(subTimeM(i,:) == min(subTimeM(i,:)));
+    firstS(i) = find(subTime(i,:) == min(subTime(i,:)));
 end
  for i=1:nDiv
      for j=1:nSu
@@ -513,14 +517,16 @@ end
          ylabel('M Phase')
          subTimeR(i,j) = median(tmp(ra));
          subTime2R(i,j) = mean(tmp(ra));
-
+         
     end
     
  end
 figure(7);
 saveas(gcf,[outdir,'SourceTime_MG'],'png')
+saveas(gcf,[outdir,'SourceTime_MG'],'fig')
 figure(8);
 saveas(gcf,[outdir,'SourceTime_M'],'png')
+saveas(gcf,[outdir,'SourceTime_M'],'fig')
 
 % Median subevent time estimate
 subTime = reshape(subTime,nDiv*nSu,1);
@@ -540,3 +546,16 @@ for i = 1:nSu
     fprintf(TimeFile,'%.3f %.3f %.3f %.3f %.3f %.3f \n',outT((i-1)*nDiv+1:i*nDiv,:)');
 end
 fclose(TimeFile);
+
+%% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+%                       Save Info                        %
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
+info.lowF = lowF;
+info.highF = highF;
+info.fspace = fspace;
+info.t = t;
+info.tw = tw;
+info.nDiv = nDiv;
+info.Div = Div;
+info.DivPop = DivPop;
+save([outdir,'InversionOutput.mat'],'uom','synV','specPower','mm','GF','fspace','info','-v7.3');
