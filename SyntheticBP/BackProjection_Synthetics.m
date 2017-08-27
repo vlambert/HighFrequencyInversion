@@ -8,15 +8,16 @@ clear all;
 close all;
 
 tic;
-
+addpath('../')
 scrsz=get(0,'ScreenSize');
-outdir = 'Toy/';
+outdir = '60station_homogenous_2array/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
 
 frameDir = 'Frames/';
 movieDir = 'movies/';
+MovieName = '60stationRing';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -93,7 +94,8 @@ end
 
 th_st = station_az';
 [th_st, index]=sort(th_st);
-R = gcarc(index);
+%R = gcarc(index);
+R = R*deg2km;
 
 x_st=R.*sin(th_st');
 y_st=R.*cos(th_st');
@@ -107,7 +109,7 @@ AZweight=ones(size(AZweight));
 
 %% plot station map (Figure 1)
 figure(1);clf;
-set(gcf,'Position',[1 scrsz(4)*2/3 scrsz(3)/4 scrsz(4)/3]);
+set(gcf,'Position',[1 scrsz(4)*2/3 530 650]);
 hold on;
 az0=linspace(0,2*pi,100);
 plot(EVLO+25*cos(az0),EVLA+25*sin(az0),'-k');
@@ -145,8 +147,8 @@ P_trav = load('P_trav_607_const.txt');    % TauP with IASP91 velocity model
 
 % Distortions for multiple phases and attenuation
 multiple = zeros(nsta,2);
-multiple(:,1) = 1;    % number of multiples
-multiple(:,2) = 2;    % time delay for each multiple
+multiple(:,1) = 1;    % number of arrivals
+multiple(:,2) = 2;    % time delay for each multiple (s)
 multiple(:,3) = 1;    % damping factor
 
 % Make synthetics wrt first arrival
@@ -173,7 +175,7 @@ w=w./sum(w);
 w2=w*ones(1,nt);
 %% Plotting data for each station
 figure(3);clf
-set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 scrsz(3)/4 scrsz(4)/2]);
+set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 530 650]);
 subplot(6,1,1:4);
 h=pcolor(t,station_az/pi,Data);
 ylim([0 2])
@@ -240,18 +242,8 @@ toc;
 BP=BP./max(max(max(BP)));
 BPs=BPs./max(max(max(BPs)));
 
-% Last frame is integrated signal over time
 BP(:,:,end+1)=max(BP,[],3);
 BPs(:,:,end+1)=max(BPs,[],3);
-for ii = 1:nxbp
-    for jj = 1:nybp
-    BP(ii,jj,end) = sum(BP(ii,jj,1:(end-1)));
-    BPs(ii,jj,end) = sum(BPs(ii,jj,(end-1)));
-    end
-end
-BP(:,:,end) = BP(:,:,end)./max(BP(:,:,end));
-BPs(:,:,end) = BPs(:,:,end)./max(BPs(:,:,end));
-
 
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -277,75 +269,41 @@ for ii=1:nt+1
 end
 %%
 delete([frameDir,'Frames*.png']);
-figure(5);clf
-set(gcf,'Position',[1 1 scrsz(3)/2 scrsz(4)/3]);
+%figure(5);clf
+%h1 = figure('Visible','Off');clf
 
-sample1=squeeze(BP(xsample,ysample,1:end-1));
-sample2=squeeze(BPs(xsample,ysample,1:end-1));
+%set(gcf,'Position',[1 1 996 384]);
 
-subplot(4,2,7);hold on;
-plot(t,sample1,'k');
-ylim([0 max([sample1; sample2])])
-subplot(4,2,8);hold on;
-plot(t,sample2,'k');
-ylim([0 max([sample1; sample2])])
+%sample1=squeeze(BP(xsample,ysample,1:end-1));
+%sample2=squeeze(BPs(xsample,ysample,1:end-1));
 
-mov(1:nt+1)=struct('cdata',[],'colormap',[]);
-set(gca,'nextplot','replacechildren');
-set(gcf,'color','w');
+% subplot(4,2,7);hold on;
+% plot(t,sample1,'k');
+% ylim([0 max([sample1; sample2])])
+% subplot(4,2,8);hold on;
+% plot(t,sample2,'k');
+% ylim([0 max([sample1; sample2])])
 
-for ii=1:(nt+1)
-    subplot(4,2,[1 3 5]);hold off;
+%mov(1:nt+1)=struct('cdata',[],'colormap',[]);
+%set(gca,'nextplot','replacechildren');
+%set(gcf,'color','w');
+parfor ii=1:(nt+1)
     tmp=squeeze(BP(:,:,ii));
-    h=pcolor(x_bp-dx/2,y_bp-dy/2,tmp');
-    set(h,'EdgeColor','none');
-    axis equal;
-    xlim([min(x_bp)-dx/2 max(x_bp)-dx/2])
-    ylim([min(y_bp)-dy/2 max(y_bp-dy/2)])
-    caxis([0 1]);
-    hold on; plot(x_ev,y_ev,'rp','MarkerSize',15);
-    plot(xpeak(1:ii),ypeak(1:ii),'bs');
-    
-    % Track the temporal progress along the sample grid point
-    subplot(4,2,7);hold on;
-    if(ii<nt+1) 
-        plot(t(ii),sample1(ii),'rx');
-    end
-
-    
-    subplot(4,2,[2 4 6]);hold off;
-    tmp=squeeze(BPs(:,:,ii));
-    h=pcolor(x_bp-dx/2,y_bp-dy/2,tmp');
-    set(h,'EdgeColor','none');
-    axis equal;
-    xlim([min(x_bp)-dx/2 max(x_bp)-dx/2])
-    ylim([min(y_bp)-dy/2 max(y_bp)-dy/2])
-    caxis([0 1]);
-    hold on; plot(x_ev,y_ev,'rp','MarkerSize',8);
-    plot(xpeaks(1:ii),ypeaks(1:ii),'bs');
-    
-    subplot(4,2,8);hold on;
-    if(ii<nt+1)
-        plot(t(ii),sample2(ii),'rx');
-    end
-    mov(ii)=getframe(gcf);
-    img2=getframe(gcf);
-    imwrite(img2.cdata, [frameDir,sprintf('Frames_%d.png', ii)]);
-    pause(0.1);
+    tmp2=squeeze(BPs(:,:,ii));
+    MakeFrame(tmp,tmp2,x_bp,y_bp,dx,dy,t,x_ev,y_ev,frameDir,ii,nt)
 end
 
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                      Make Movie                        %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-writerObj = VideoWriter([movieDir,'BP_test.avi']);
+writerObj = VideoWriter([movieDir,MovieName]);
 writerObj.FrameRate = 5;
 open(writerObj);
 for K = 1:(nt+1)
     filename = [frameDir,sprintf('Frames_%d.png', K)];
     thisimage = imread(filename);
     writeVideo(writerObj, thisimage);
-    pause(0.1)
 end
 close(writerObj);
 
@@ -381,3 +339,5 @@ box on
 ylim([0 60]);xlim([0 40]);zlim([0 200])
 saveas(gcf,[outdir,'MisfitSurface'],'png')
 saveas(gcf,[outdir,'MisfitSurface'],'fig')
+
+parpool close
