@@ -8,7 +8,7 @@ clear all;
 close all;
 
 tic;
-
+addpath('../')
 scrsz=get(0,'ScreenSize');
 outdir = 'Toy/';
 if ~exist(outdir,'dir')
@@ -107,7 +107,7 @@ AZweight=ones(size(AZweight));
 
 %% plot station map (Figure 1)
 figure(1);clf;
-set(gcf,'Position',[1 scrsz(4)*2/3 scrsz(3)/4 scrsz(4)/3]);
+set(gcf,'Position',[1 scrsz(4)*2/3 530 650]);
 hold on;
 az0=linspace(0,2*pi,100);
 plot(EVLO+25*cos(az0),EVLA+25*sin(az0),'-k');
@@ -173,7 +173,7 @@ w=w./sum(w);
 w2=w*ones(1,nt);
 %% Plotting data for each station
 figure(3);clf
-set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 scrsz(3)/4 scrsz(4)/2]);
+set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 530 650]);
 subplot(6,1,1:4);
 h=pcolor(t,station_az/pi,Data);
 ylim([0 2])
@@ -277,7 +277,7 @@ for ii=1:nt+1
 end
 %%
 delete([frameDir,'Frames*.png']);
-figure(5);clf
+h1 = figure('Visible','Off');clf
 set(gcf,'Position',[1 1 scrsz(3)/2 scrsz(4)/3]);
 
 sample1=squeeze(BP(xsample,ysample,1:end-1));
@@ -303,6 +303,7 @@ for ii=1:(nt+1)
     xlim([min(x_bp)-dx/2 max(x_bp)-dx/2])
     ylim([min(y_bp)-dy/2 max(y_bp-dy/2)])
     caxis([0 1]);
+    title('Linear stack');
     hold on; plot(x_ev,y_ev,'rp','MarkerSize',15);
     plot(xpeak(1:ii),ypeak(1:ii),'bs');
     
@@ -321,6 +322,7 @@ for ii=1:(nt+1)
     xlim([min(x_bp)-dx/2 max(x_bp)-dx/2])
     ylim([min(y_bp)-dy/2 max(y_bp)-dy/2])
     caxis([0 1]);
+    title('Square stack');
     hold on; plot(x_ev,y_ev,'rp','MarkerSize',8);
     plot(xpeaks(1:ii),ypeaks(1:ii),'bs');
     
