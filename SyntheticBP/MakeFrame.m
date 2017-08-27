@@ -1,4 +1,4 @@
-function  MakeFrame(tmp,tmp2,x_bp,y_bp,dx,dy,t,x_ev,y_ev,frameDir,ii,nt)
+function  MakeFrame(tmp,tmp2,x_bp,y_bp,dx,dy,t,x_ev,y_ev,frameDir,outdir,ii,nt)
     h1 = figure('Visible','Off');clf
     set(gcf,'Position',[1 1 996 384]);
     set(gcf,'color','w');
@@ -43,5 +43,8 @@ function  MakeFrame(tmp,tmp2,x_bp,y_bp,dx,dy,t,x_ev,y_ev,frameDir,ii,nt)
     %img2=getframe(gcf);
     %imwrite(img2.cdata, [frameDir,sprintf('Frames_%d.png', ii)]);
     saveas(gcf,[frameDir,sprintf('Frames_%d', ii)],'png')
+    if ii == (nt+1)
+        saveas(gcf,[outdir,'FinalBeam'],'png')
+    end
 
 end

@@ -10,7 +10,7 @@ close all;
 tic;
 addpath('../')
 scrsz=get(0,'ScreenSize');
-outdir = '60station_homogenous_2array/';
+outdir = '60station_homoegenous_1array_doublet/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -68,7 +68,7 @@ xycenters = [cx,cy];
 %                Construct station network               %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 
-narray = 100;
+narray = 60;
 R = [60];              % Radius of rings in degrees
 %az_res = 0.1;
 %az = (0:az_res:360)'*pi/180;
@@ -76,20 +76,20 @@ R = [60];              % Radius of rings in degrees
 %az = cat(1,az,(310:az_res:330)'*pi/180);
 nsta = length(R)*narray;
 
-nDiv = 1;              % Number of subarrays
+nDiv = 2;              % Number of subarrays
 arrayPop = nsta / nDiv;    % Subarray populations are even
 
 % Azimuthal ranges for each subarray
-minA1 = 1/2*pi;        maxA1 = 3/2*pi; 
-%minA2 = 3/2*pi;         maxA2 = 5/2*pi;
+minA1 = 0*pi;        maxA1 = pi; 
+minA2 = 1*pi;         maxA2 = 2*pi;
 
 range1 = maxA1 - minA1; az_res1 = range1/arrayPop;
-%range2 = maxA2 - minA2; az_res2 = range2/arrayPop;
+range2 = maxA2 - minA2; az_res2 = range2/arrayPop;
 
 azi1 = (minA1:az_res1:maxA1)'; azi1 = azi1(1:end-1);
-%azi2 = (minA2:az_res2:maxA2)'; azi2 = azi2(1:end-1);
+azi2 = (minA2:az_res2:maxA2)'; azi2 = azi2(1:end-1);
 
-azi = [azi1];%azi2];
+azi = [azi1;azi2];
 
 StaLoc=zeros(nsta,2);
 %stations_az=zeros(nsta,1);
@@ -112,7 +112,7 @@ for st=1:nsta
     gcarc(st,1)=DIST_t;
 end
 
-th_st = station_az';
+th_st = az';
 [th_st, index]=sort(th_st);
 %R = gcarc(index);
 R = R*deg2km;
@@ -122,10 +122,10 @@ y_st=R.*cos(th_st');
 
 % Set up coherent array divisions
 Div1 = find( az >=minA1  & az <maxA1);
-%Div2 = find( az >=minA2  & az <maxA2);
+Div2 = find( az >=minA2  & az <maxA2);
 
-Div = [Div1];%Div2];
-DivPop = [0;length(Div1)];% length(Div2)];
+Div = [Div1;Div2];
+DivPop = [0;length(Div1); length(Div2)];
 
 % Azimuthal weighting
 az1=[th_st(end)-2*pi,th_st(1:end-1)];
@@ -174,8 +174,8 @@ P_trav = load('P_trav_607_const.txt');    % TauP with IASP91 velocity model
 
 % Distortions for multiple phases and attenuation
 multiple = zeros(nsta,2);
-multiple(:,1) = 1;    % number of arrivals
-multiple(:,2) = 2;    % time delay for each multiple (s)
+multiple(:,1) = 2;    % number of arrivals
+multiple(:,2) = 0.5;    % time delay for each multiple (s)
 multiple(:,3) = 1;    % damping factor
 
 %multiple(Div2,1) = 2;    % number of multiples
@@ -208,7 +208,7 @@ w2=w*ones(1,nt);
 figure(3);clf
 set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 530 650]);
 subplot(6,1,1:4);
-h=pcolor(t,station_az/pi,Data);
+h=pcolor(t,az/pi,Data);
 ylim([0 2])
 set(h,'EdgeColor','none');
 ylabel('station azimuth \theta (\pi)')
@@ -321,14 +321,14 @@ delete([frameDir,'Frames*.png']);
 parfor ii=1:(nt+1)
     tmp=squeeze(BP(:,:,ii));
     tmp2=squeeze(BPs(:,:,ii));
-    MakeFrame(tmp,tmp2,x_bp,y_bp,dx,dy,t,x_ev,y_ev,frameDir,ii,nt)
+    MakeFrame(tmp,tmp2,x_bp,y_bp,dx,dy,t,x_ev,y_ev,frameDir,outdir,ii,nt)
 end
 
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                      Make Movie                        %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-writerObj = VideoWriter([movieDir,MovieName]);
+writerObj = VideoWriter([outdir,MovieName]);
 writerObj.FrameRate = 5;
 open(writerObj);
 for K = 1:(nt+1)
@@ -371,4 +371,4 @@ ylim([0 60]);xlim([0 40]);zlim([0 200])
 saveas(gcf,[outdir,'MisfitSurface'],'png')
 saveas(gcf,[outdir,'MisfitSurface'],'fig')
 
-parpool close
+delete(gcp('nocreate'));

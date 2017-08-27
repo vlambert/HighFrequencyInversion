@@ -10,7 +10,7 @@ clear all;
 close all;
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Homogeneous_1sub_60st_0_2Hz_stationshift_comparison/';
+outdir = 'Homogeneous_1sub_60st_0_2Hz_halfcircle/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -23,6 +23,8 @@ EVDP=607;
 %subevent locations and times
 x_ev=[0 1 8    10];% 20 25 ]./2; % km
 y_ev=[0 4 6    7];% 10 10 ]./2; % km
+%x_ev=[0 4  6 7];
+%y_ev=[0 -1 -8 -10];
 t_ev=[0 3  7   9 ];%10 12];     % seconds
 m_ev=[1 1  1   1];%  1  1];     % moment normalized to event 1
 n_ev=length(x_ev);
@@ -40,6 +42,8 @@ dx=1;     % cell spacing (km)
 dy=dx;    
 xmin = -5; xmax = 13;   % (km)
 ymin = -5; ymax = 10;   % (km)
+%xmin = -5; xmax = 10;
+%ymin = -13; ymax = 5;
 
 x_bp = xmin:dx:xmax;
 y_bp = ymin:dy:ymax;
@@ -61,7 +65,7 @@ nDiv = 1;              % Number of subarrays
 arrayPop = nsta / nDiv;    % Subarray populations are even
 
 % Azimuthal ranges for each subarray
-minA1 = 1/2*pi;        maxA1 = 3/2*pi; 
+minA1 = 0*pi;        maxA1 = 1*pi; 
 %minA2 = 3/2*pi;         maxA2 = 5/2*pi;
 %minA3 = 6/5*pi;        maxA3 = 7/5*pi;
 % minA4 = 8/5*pi;        maxA4 = 9/5*pi;
