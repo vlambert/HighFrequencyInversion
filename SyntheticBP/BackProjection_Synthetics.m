@@ -35,9 +35,9 @@ EVLO =0;
 EVDP=607;
 
 %subevent locations and times
-x_ev=[0 -1 9  10];% 20 25 ]./2; % km
-y_ev=[0 7 6  4];% 10 10 ]./2; % km
-t_ev=[0 3  5   6 ];%10 12];     % seconds
+x_ev=[0 1 8    10];% 20 25 ]./2; % km
+y_ev=[0 4 6    7];% 10 10 ]./2; % km
+t_ev=[0 3  7   9 ];%10 12];     % seconds
 m_ev=[1 1  1   1];%  1  1];     % moment normalized to event 1
 n_ev=length(x_ev);
 
@@ -122,6 +122,8 @@ text(0.75e4,-0.8e4,'95^{o}','FontSize',14)
 set(gca,'FontSize',14)
 set(gca,'color','none')
 title('Station Distribution')
+saveas(gcf,[outdir,'StationMap'],'png')
+saveas(gcf,[outdir,'StationMap'],'fig')
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %              Make Synthetic Seismograms                %
@@ -190,6 +192,8 @@ event1=smooth(event1.^2,nsmooth); % square stacking smoothing
 plot(t,event1,'-k');
 xlim([t(1) t(end)])
 set(gca,'FontSize',14)
+saveas(gcf,[outdir,'AzimuthalDistribution'],'png')
+saveas(gcf,[outdir,'AzimuthalDistribution'],'fig')
 toc;
 
 %% % % % % % % % % % % % % % % % % % % % %%
@@ -235,8 +239,20 @@ end
 toc;
 BP=BP./max(max(max(BP)));
 BPs=BPs./max(max(max(BPs)));
+
+% Last frame is integrated signal over time
 BP(:,:,end+1)=max(BP,[],3);
 BPs(:,:,end+1)=max(BPs,[],3);
+for ii = 1:nxbp
+    for jj = 1:nybp
+    BP(ii,jj,end) = sum(BP(ii,jj,1:(end-1)));
+    BPs(ii,jj,end) = sum(BPs(ii,jj,(end-1)));
+    end
+end
+BP(:,:,end) = BP(:,:,end)./max(BP(:,:,end));
+BPs(:,:,end) = BPs(:,:,end)./max(BPs(:,:,end));
+
+
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                   Track peak beam power                %
@@ -278,7 +294,7 @@ mov(1:nt+1)=struct('cdata',[],'colormap',[]);
 set(gca,'nextplot','replacechildren');
 set(gcf,'color','w');
 
-for ii=1:nt+1
+for ii=1:(nt+1)
     subplot(4,2,[1 3 5]);hold off;
     tmp=squeeze(BP(:,:,ii));
     h=pcolor(x_bp-dx/2,y_bp-dy/2,tmp');
@@ -325,7 +341,7 @@ end
 writerObj = VideoWriter([movieDir,'BP_test.avi']);
 writerObj.FrameRate = 5;
 open(writerObj);
-for K = 1:nt+1
+for K = 1:(nt+1)
     filename = [frameDir,sprintf('Frames_%d.png', K)];
     thisimage = imread(filename);
     writeVideo(writerObj, thisimage);
@@ -363,6 +379,5 @@ lighting gouraud
 grid on
 box on
 ylim([0 60]);xlim([0 40]);zlim([0 200])
-
-
-%%
+saveas(gcf,[outdir,'MisfitSurface'],'png')
+saveas(gcf,[outdir,'MisfitSurface'],'fig')
