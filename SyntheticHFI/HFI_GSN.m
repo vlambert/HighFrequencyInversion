@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Aug22/FourSources/TryUniform2Div/';
+outdir = 'Aug22/FourSources/TryUniform2Div_stationshift/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -62,8 +62,8 @@ xycenters = [cx,cy];
 nDiv = 2;              % Number of subarrays
 
 % Azimuthal ranges for each subarray
-minA1 = 0*pi;        maxA1 = pi; 
-minA2 = pi;          maxA2 = 2*pi;
+minA1 = 1/2*pi;        maxA1 = 3/2*pi; 
+minA2 = 3/2*pi;          maxA2 = 1/2*pi;
 % minA3 = 8/9*pi;        maxA3 = 4/3*pi;
 % minA4 = 4/3*pi;        maxA4 = 5/3*pi;
 % minA5 = 5/3*pi;        maxA5 = 1/6*pi;
@@ -96,7 +96,7 @@ y_st=R'.*cos(th_st);
 
 % Set up coherent array divisions
 Div1 = find( th_st >=minA1  & th_st <maxA1);
-Div2 = find( th_st >=minA2  & th_st <maxA2);
+Div2 = find( th_st >=minA2  | th_st <maxA2);
 %Div3 = find( th_st >=minA3  & th_st <maxA3);
 %Div4 = find( th_st >=minA4  & th_st <maxA4);
 %Div5 = find( th_st >=minA5  | th_st <maxA5);
@@ -478,7 +478,7 @@ end
  
 firstS = zeros(nDiv,1);
 for i = 1:nDiv
-    firstS(i) = find(subTimeM(i,:) == min(subTimeM(i,:)));
+    firstS(i) = find(subTime(i,:) == min(subTime(i,:)));
 end
  for i=1:nDiv
      for j=1:nSu
@@ -528,3 +528,16 @@ for i = 1:nSu
     fprintf(TimeFile,'%.3f %.3f %.3f %.3f %.3f %.3f \n',outT((i-1)*nDiv+1:i*nDiv,:)');
 end
 fclose(TimeFile);
+
+%% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+%                       Save Info                        %
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
+info.lowF = lowF;
+info.highF = highF;
+info.fspace = fspace;
+info.t = t;
+info.tw = tw;
+info.nDiv = nDiv;
+info.Div = Div;
+info.DivPop = DivPop;
+save([outdir,'InversionOutput.mat'],'uom','synV','specPower','mm','GF','fspace','info','-v7.3');
