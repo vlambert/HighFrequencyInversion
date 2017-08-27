@@ -64,17 +64,36 @@ cx = reshape(repmat(x_bp,nybp,1),ns,1);
 cy = reshape(repmat(y_bp',nxbp,1),ns,1);
 xycenters = [cx,cy];
 
+%% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+%                Construct station network               %
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 
-% Station locations
 narray = 100;
 R = [60];              % Radius of rings in degrees
-az_res = 0.1;
-az = (0:az_res:360)'*pi/180;
+%az_res = 0.1;
+%az = (0:az_res:360)'*pi/180;
 %az = cat(1,az,(180:az_res:270)'*pi/180);
 %az = cat(1,az,(310:az_res:330)'*pi/180);
 nsta = length(R)*narray;
+
+nDiv = 1;              % Number of subarrays
+arrayPop = nsta / nDiv;    % Subarray populations are even
+
+% Azimuthal ranges for each subarray
+minA1 = 1/2*pi;        maxA1 = 3/2*pi; 
+%minA2 = 3/2*pi;         maxA2 = 5/2*pi;
+
+range1 = maxA1 - minA1; az_res1 = range1/arrayPop;
+%range2 = maxA2 - minA2; az_res2 = range2/arrayPop;
+
+azi1 = (minA1:az_res1:maxA1)'; azi1 = azi1(1:end-1);
+%azi2 = (minA2:az_res2:maxA2)'; azi2 = azi2(1:end-1);
+
+azi = [azi1];%azi2];
+
 StaLoc=zeros(nsta,2);
-stations_az=zeros(nsta,1);
+%stations_az=zeros(nsta,1);
+az = zeros(nsta,1);
 for ri=1:length(R)
     station_lat = EVLA+R(ri)*cos(az);
     station_lon = EVLA+R(ri)*sin(az);
@@ -82,7 +101,8 @@ for ri=1:length(R)
     %stations_i = randi(length(station_lat),narray,1);          % random distribution
     stations_i =round(linspace(1,length(station_lat),narray));     % even distribution
     StaLoc((ri-1)*narray+1:ri*narray,:)=stationsri(stations_i,:);
-    station_az((ri-1)*narray+1:ri*narray,1)  = az(stations_i);
+    %station_az((ri-1)*narray+1:ri*narray,1)  = azi(stations_i);
+    az = azi(stations_i,1);
 end
 
 gcarc = zeros(nsta,1);
@@ -99,6 +119,13 @@ R = R*deg2km;
 
 x_st=R.*sin(th_st');
 y_st=R.*cos(th_st');
+
+% Set up coherent array divisions
+Div1 = find( az >=minA1  & az <maxA1);
+%Div2 = find( az >=minA2  & az <maxA2);
+
+Div = [Div1];%Div2];
+DivPop = [0;length(Div1)];% length(Div2)];
 
 % Azimuthal weighting
 az1=[th_st(end)-2*pi,th_st(1:end-1)];
@@ -150,6 +177,10 @@ multiple = zeros(nsta,2);
 multiple(:,1) = 1;    % number of arrivals
 multiple(:,2) = 2;    % time delay for each multiple (s)
 multiple(:,3) = 1;    % damping factor
+
+%multiple(Div2,1) = 2;    % number of multiples
+%multiple(Div2,2) = 0.5;  % time delay for each multiple
+%multiple(Div2,3) = 1;    % damping factor
 
 % Make synthetics wrt first arrival
 Data=zeros(nsta, nt);
