@@ -172,7 +172,7 @@ w=w./sum(w);
 w2=w*ones(1,nt);
 %% Plotting data for each station
 figure(2);clf
-set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 scrsz(3)/4 scrsz(4)/2]);
+set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 530 650]);
 subplot(6,1,1:4);
 h=pcolor(t,th_st/pi,Data);
 ylim([0 2])
@@ -195,7 +195,7 @@ subplot(6,1,6);
 event2=sum(Data.*w2,1);
 event2=smooth(event2.^4,nsmooth); % square stacking smoothing
 plot(t,event2);
-text(9,0.16,'4th-order stacking','FontSize',12);
+text(9,0.16,'2nd-order stacking','FontSize',12);
 xlim([t(1) t(end)])
 set(gca,'FontSize',14)
 saveas(gcf,[outdir,'AzimuthalDistribution'],'png')
@@ -205,8 +205,8 @@ toc;
 %                    Back - Projection                   %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 tic;
-BP2=zeros(nxbp,nybp,nt); % square stack
-BP4=BP2;                 % 4th-order stack
+BP=zeros(nxbp,nybp,nt); % square stack
+BPs=BP2;                 % 4th-order stack
 
 xsample = find(x_bp == 0);
 ysample = find(y_bp == 0);
@@ -224,8 +224,8 @@ for ii=1:nxbp
         for kk=1:nsta
             tmpData(kk,:)=interp1(t-trav(kk),Data(kk,:),t,'linear',0);
         end
-        BP2(ii,jj,:)=smooth( (sum(tmpData.*w2,1)).^2 ,nsmooth);
-        BP4(ii,jj,:)=smooth( (sum(tmpData.*w2,1)).^4 ,nsmooth);
+        BP(ii,jj,:)=smooth( (sum(tmpData.*w2,1)) ,nsmooth);
+        BPs(ii,jj,:)=smooth( (sum(tmpData.*w2,1)).^2 ,nsmooth);
         
 %         if(ii==xsample && jj==ysample)
 %             figure(3);clf
@@ -238,11 +238,11 @@ for ii=1:nxbp
     end
 end
 
-BP2 = BP2./max(max(max(BP2)));
-BP4 = BP4./max(max(max(BP4)));
+BP = BP./max(max(max(BP2)));
+BPs = BPs./max(max(max(BP4)));
 toc;
-BP2(:,:,end+1)=max(BP2,[],3);
-BP4(:,:,end+1)=max(BP4,[],3);
+BP(:,:,end+1)=max(BP,[],3);
+BPs(:,:,end+1)=max(BPs,[],3);
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                   Track peak beam power                %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
@@ -255,80 +255,47 @@ maxX=xpeak;
 maxXs=xpeak;
 
 for ii=1:nt+1
-    tmp=squeeze(BP2(:,:,ii));
+    tmp=squeeze(BP(:,:,ii));
     [jj, kk, maxX(ii)]=findpeaks2D(tmp,0.05);
     xpeak(ii)=x_bp(jj);
     ypeak(ii)=y_bp(kk);
     
-    tmp=squeeze(BP4(:,:,ii));
+    tmp=squeeze(BPs(:,:,ii));
     [jj, kk, maxXs(ii)]=findpeaks2D(tmp,0.05);
     xpeaks(ii)=x_bp(jj);
     ypeaks(ii)=y_bp(kk);
 end
 %%
 delete([frameDir,'Frames*.png']);
-figure(4);clf
-set(gcf,'Position',[1 1 scrsz(3)/2 scrsz(4)/3]);
+%figure(5);clf
+%h1 = figure('Visible','Off');clf
 
-sample1=squeeze(BP2(xsample,ysample,1:end-1));
-sample2=squeeze(BP4(xsample,ysample,1:end-1));
+%set(gcf,'Position',[1 1 996 384]);
 
-subplot(4,2,7);hold on;
-plot(t,sample1,'k');
-ylim([0 max([sample1; sample2])])
-subplot(4,2,8);hold on;
-plot(t,sample2,'k');
-ylim([0 max([sample1; sample2])])
+%sample1=squeeze(BP(xsample,ysample,1:end-1));
+%sample2=squeeze(BPs(xsample,ysample,1:end-1));
 
+% subplot(4,2,7);hold on;
+% plot(t,sample1,'k');
+% ylim([0 max([sample1; sample2])])
+% subplot(4,2,8);hold on;
+% plot(t,sample2,'k');
+% ylim([0 max([sample1; sample2])])
 
-mov(1:nt+1)=struct('cdata',[],'colormap',[]);
-set(gca,'nextplot','replacechildren');
-set(gcf,'color','w');
-
-for ii=1:nt+1
-    subplot(4,2,[1 3 5]);hold off;
-    tmp=squeeze(BP2(:,:,ii));
-    h=pcolor(x_bp-dx/2,y_bp-dy/2,tmp');
-    set(h,'EdgeColor','none');
-    axis equal;
-    xlim([min(x_bp)-dx/2 max(x_bp)-dx/2])
-    ylim([min(y_bp)-dy/2 max(y_bp)-dy/2])
-    caxis([0 1]);
-    hold on; plot(x_ev,y_ev,'rp','MarkerSize',8);  
-    plot(xpeak(1:ii),ypeak(1:ii),'bs');
-    
-    subplot(4,2,7);hold on;
-    if(ii<nt+1) 
-        plot(t(ii),sample1(ii),'rx');
-    end
-
-    
-    subplot(4,2,[2 4 6]);hold off;
-    tmp=squeeze(BP4(:,:,ii));
-    h=pcolor(x_bp-dx/2,y_bp-dy/2,tmp');
-    set(h,'EdgeColor','none');
-    axis equal;
-    xlim([min(x_bp)-dx/2 max(x_bp)-dx/2])
-    ylim([min(y_bp)-dy/2 max(y_bp)-dy/2])
-    caxis([0 1]);
-    hold on; plot(x_ev,y_ev,'rp','MarkerSize',8);
-    plot(xpeaks(1:ii),ypeaks(1:ii),'bs');
-    
-    subplot(4,2,8);hold on;
-    if(ii<nt+1)
-        plot(t(ii),sample2(ii),'rx');
-    end
-    mov(ii)=getframe(gcf);
-    img2=getframe(gcf);
-    imwrite(img2.cdata, [frameDir,sprintf('Frames_%d.png', ii)]);
-    pause(0.01);
+%mov(1:nt+1)=struct('cdata',[],'colormap',[]);
+%set(gca,'nextplot','replacechildren');
+%set(gcf,'color','w');
+parfor ii=1:(nt+1)
+    tmp=squeeze(BP(:,:,ii));
+    tmp2=squeeze(BPs(:,:,ii));
+    MakeFrame(tmp,tmp2,x_bp,y_bp,dx,dy,t,x_ev,y_ev,frameDir,outdir,ii,nt)
 end
 
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                      Make Movie                        %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-writerObj = VideoWriter([movieDir,'BPsynthetic_iasp_GSN.avi']);
+writerObj = VideoWriter([outdir,'BPsynthetic_iasp_MultiArray.avi']);
 writerObj.FrameRate = 15;
 open(writerObj);
 for K = 1:nt+1
