@@ -32,9 +32,9 @@ EVLO=153.281;
 EVDP=607;
 
 %subevent locations and times
-x_ev=[0 -1 9  10];% 20 25 ]./2; % km
-y_ev=[0 7 6  4];% 10 10 ]./2; % km
-t_ev=[0 3  5   6 ];%10 12];     % seconds
+x_ev=[0 1 8    10];% 20 25 ]./2; % km
+y_ev=[0 4 6    7];% 10 10 ]./2; % km
+t_ev=[0 3  7   9 ];%10 12];     % seconds
 m_ev=[1 1  1   1];%  1  1];     % moment normalized to event 1
 n_ev=length(x_ev);
 
