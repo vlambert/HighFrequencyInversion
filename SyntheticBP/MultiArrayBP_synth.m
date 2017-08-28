@@ -206,7 +206,7 @@ toc;
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 tic;
 BP=zeros(nxbp,nybp,nt); % square stack
-BPs=BP2;                 % 4th-order stack
+BPs=BP;                 % 4th-order stack
 
 xsample = find(x_bp == 0);
 ysample = find(y_bp == 0);
@@ -238,8 +238,8 @@ for ii=1:nxbp
     end
 end
 
-BP = BP./max(max(max(BP2)));
-BPs = BPs./max(max(max(BP4)));
+BP = BP./max(max(max(BP)));
+BPs = BPs./max(max(max(BPs)));
 toc;
 BP(:,:,end+1)=max(BP,[],3);
 BPs(:,:,end+1)=max(BPs,[],3);
@@ -315,8 +315,8 @@ figure(5);clf
 set(gcf,'Position',[1 1 scrsz(3)/2 scrsz(4)/3]);
 % Square stack surface, space and time
 subplot(1,2,1);
-p=patch(isosurface(BP2(:,:,1:end-1),cont));
-isonormals(BP2(:,:,1:end-1),p);
+p=patch(isosurface(BP(:,:,1:end-1),cont));
+isonormals(BP(:,:,1:end-1),p);
 p.FaceColor='red';
 p.EdgeColor='none';
 view(3);
@@ -330,8 +330,8 @@ ylabel('y (km)');
 zlabel('time (s)');
 % 4th-order stack surface, space and time
 subplot(1,2,2);
-p=patch(isosurface(BP4(:,:,1:end-1),cont));
-isonormals(BP4(:,:,1:end-1),p);
+p=patch(isosurface(BPs(:,:,1:end-1),cont));
+isonormals(BPs(:,:,1:end-1),p);
 p.FaceColor='red';
 p.EdgeColor='none';
 view(3);
