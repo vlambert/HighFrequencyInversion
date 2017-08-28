@@ -132,8 +132,8 @@ for d=1:nDiv
         'MarkerFaceColor','w');
 end
 plot(lon_ev,lat_ev,'rp');
-xlabel('Longitude')
-ylabel('Latitude')
+% xlabel('Longitude')
+% ylabel('Latitude')
 axis equal; box on;
 text(0.15e4,-0.1e4,'25^{o}','FontSize',14)
 text(0.75e4,-0.8e4,'95^{o}','FontSize',14)
