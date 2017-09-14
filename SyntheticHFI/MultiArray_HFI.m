@@ -209,8 +209,8 @@ saveas(gcf,[outdir,'AzimuthalDistribution'],'fig')
 %        Filter and Convert to Frequency Domain          %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 fnyq = 1/dt/2;      % Nyquist frequency
-lowF  = 1e-6;       % Hz
-highF = 8.0;        % Hz
+lowF  = 0.5;       % Hz
+highF = 2.0;        % Hz
 
 DataFilt = Data;
 [B,A] = butter(4,[lowF highF]./fnyq);

@@ -10,7 +10,7 @@ clear all;
 close all;
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Homogeneous_1sub_60st_0_2Hz_halfcircle/';
+outdir = 'Homogeneous_circle_2array_freqbins/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -21,6 +21,8 @@ EVLO=153.281;
 EVDP=607;
 
 %subevent locations and times
+%x_ev=[0 1 8    8];
+%y_ev=[0 4 6    6];
 x_ev=[0 1 8    10];% 20 25 ]./2; % km
 y_ev=[0 4 6    7];% 10 10 ]./2; % km
 %x_ev=[0 4  6 7];
@@ -60,13 +62,13 @@ xycenters = [cx,cy];
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 nsta = 60;             % Number of stations
 R = [60];              % Radius of rings in degrees
-nDiv = 1;              % Number of subarrays
+nDiv = 2;              % Number of subarrays
 
 arrayPop = nsta / nDiv;    % Subarray populations are even
 
 % Azimuthal ranges for each subarray
-minA1 = 0*pi;        maxA1 = 1*pi; 
-%minA2 = 3/2*pi;         maxA2 = 5/2*pi;
+minA1 = 0*pi;        maxA1 = pi; 
+minA2 = 1*pi;         maxA2 = 2*pi;
 %minA3 = 6/5*pi;        maxA3 = 7/5*pi;
 % minA4 = 8/5*pi;        maxA4 = 9/5*pi;
 % minA5 = 4/5*pi;        maxA5 = pi;
@@ -77,7 +79,7 @@ minA1 = 0*pi;        maxA1 = 1*pi;
 % minA10 = 9/5*pi;       maxA10 = 2*pi;
 
 range1 = maxA1 - minA1; az_res1 = range1/arrayPop;
-%range2 = maxA2 - minA2; az_res2 = range2/arrayPop;
+range2 = maxA2 - minA2; az_res2 = range2/arrayPop;
 % range3 = maxA3 - minA3; az_res3 = range3/arrayPop;
 % range4 = maxA4 - minA4; az_res4 = range4/arrayPop;
 % range5 = maxA5 - minA5; az_res5 = range5/arrayPop;
@@ -88,7 +90,7 @@ range1 = maxA1 - minA1; az_res1 = range1/arrayPop;
 % range10 = maxA10 - minA10; az_res10 = range10/arrayPop;
 
 azi1 = (minA1:az_res1:maxA1)'; azi1 = azi1(1:end-1);
-%azi2 = (minA2:az_res2:maxA2)'; azi2 = azi2(1:end-1);
+azi2 = (minA2:az_res2:maxA2)'; azi2 = azi2(1:end-1);
 % azi3 = (minA3:az_res3:maxA3)'; azi3 = azi3(1:end-1);
 % azi4 = (minA4:az_res4:maxA4)'; azi4 = azi4(1:end-1);
 % azi5 = (minA5:az_res5:maxA5)'; azi5 = azi5(1:end-1);
@@ -98,7 +100,7 @@ azi1 = (minA1:az_res1:maxA1)'; azi1 = azi1(1:end-1);
 % azi9 = (minA9:az_res9:maxA9)'; azi9 = azi9(1:end-1);
 % azi10 = (minA10:az_res10:maxA10)'; azi10 = azi10(1:end-1);
 
-azi = [azi1];%azi2];%azi3;azi4];%azi5;azi6;azi7;azi8;azi9;azi10];
+azi = [azi1;azi2];%azi3;azi4];%azi5;azi6;azi7;azi8;azi9;azi10];
 % minA = 0;
 % maxA = 360;
 % range =maxA - minA;
@@ -130,7 +132,7 @@ y_st=R.*cos(th_st');
 
 % Set up coherent array divisions
 Div1 = find( az >=minA1  & az <maxA1);
-%Div2 = find( az >=minA2  & az <maxA2);
+Div2 = find( az >=minA2  & az <maxA2);
 % Div3 = find( az >=minA3  & az <maxA3);
 % Div4 = find( az >=minA4  & az <maxA4);
 % Div5 = find( az >=minA5  & az <maxA5);
@@ -140,8 +142,8 @@ Div1 = find( az >=minA1  & az <maxA1);
 % Div9 = find( az >=minA9  & az <maxA9);
 % Div10= find( az >=minA10 & az <maxA10);
 
-Div = [Div1];%Div2];%Div3;Div4];%Div5;Div6;Div7;Div8;Div9;Div10];
-DivPop = [0;length(Div1)];% length(Div2)];%length(Div3);...
+Div = [Div1;Div2];%Div3;Div4];%Div5;Div6;Div7;Div8;Div9;Div10];
+DivPop = [0;length(Div1); length(Div2)];%length(Div3);...
           %length(Div4)];% length(Div5);length(Div6); length(Div7);...
           %length(Div8); length(Div9);length(Div10)];
 
@@ -212,6 +214,7 @@ Data=zeros(nsta, nt);
 % Distance and travel time from hypocenter to each station 
 dist = sqrt( ( x_ev(1) - x_st ).^2 + ( y_ev(1) - y_st ).^2 )/111.2; 
 t0j = t_ev(1)+interp1(P_trav(:,1),P_trav(:,2),dist,'linear','extrap'); 
+SNR = 20; % signal - to - noise ratio
 
 for jj=1:nsta
     for ii=1:n_ev
@@ -222,6 +225,8 @@ for jj=1:nsta
         Data(jj,:) = Data(jj,:) + m_ev(ii)*GreensFunctions(t,trav,0,fd(jj),multiple(jj,1),multiple(jj,2),multiple(jj,3));
     end
     Data(jj,:)=Data(jj,:)./max(Data(jj,:));
+    % add white gaussian noise
+    Data(jj,:) = awgn(Data(jj,:),SNR);
 end
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -251,8 +256,8 @@ saveas(gcf,[outdir,'AzimuthalDistribution'],'fig')
 %        Filter and Convert to Frequency Domain          %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 fnyq = 1/dt/2;      % Nyquist frequency
-lowF  = 0.2;       % Hz
-highF = 8.0;        % Hz
+lowF  = 0.5;       % Hz
+highF = 2.0;        % Hz
 
 DataFilt = Data;
 [B,A] = butter(4,[lowF highF]./fnyq);
@@ -266,10 +271,18 @@ ntw = length(t(tw:end));
 
 % Fourier transform the data
 nfft = 2^nextpow2(length(t(tw:end)));
-fspace = 1/dt * (0:(nfft/2))/nfft;
-nf = length(fspace);      % number of frequencies
+fspace0 = 1/dt * (0:(nfft/2))/nfft;
+nftot = length(fspace0);      % number of frequencies
+ffilt = find(fspace0 >= lowF & fspace0 <= highF);
+fspace = fspace0(ffilt);
+nf = length(fspace);
 
-DataSpec = zeros(nsta,nf);
+% Bin the frequencies
+
+binpop = 10;
+nfbin = ceil(nf/binpop);
+
+DataSpec = zeros(nsta,nftot);
 for i = 1:nsta
     spec = fft(DataFilt(i,tw:end),nfft);
     spec = spec(1:nfft/2+1);
@@ -282,7 +295,7 @@ for i = 1:nDiv
     gw = fft(GF(i,tw:end),nfft);
     GFw(i,:) = gw(1:nfft/2+1);
 end
-
+return
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Prepare and Perform Inversion              %
 %              for each Discrete Frequency               %
@@ -297,6 +310,8 @@ ncomb = ns*nDiv;          % total number of model parameters
 % Output models
 mout = zeros(nf,ncomb);
 mm   = zeros(nf,nDiv,ns);
+% mout = zeros(nfbin,ncomb*binpop);
+% mm   = zeros(nfbin,nDiv,ns);
 
 % Displacement vector for entire population
 uom = zeros(np*nf,1);
@@ -310,7 +325,7 @@ specPower = zeros(nDiv,ns);
 
 tic
 
-parfor f = 1:nf        % parallelized over frequency
+parfor f = 1:nf       % parallelized over frequency bins
     f0 = fspace(f); % frequency
     
     % Fill data vectors for frequency

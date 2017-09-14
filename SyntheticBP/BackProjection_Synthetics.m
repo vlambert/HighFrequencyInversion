@@ -31,8 +31,8 @@ if ~exist(movieDir,'dir')
 end
 
 % Hypocenter location (degrees)
-EVLA =0;
-EVLO =0;
+EVLA=0;
+EVLO=0;
 EVDP=607;
 
 %subevent locations and times
