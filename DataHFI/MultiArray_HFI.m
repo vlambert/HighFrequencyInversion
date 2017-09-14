@@ -83,10 +83,10 @@ DivColor = ['k';'r';'b'];%'m','g'];%,'y']
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %        Construct 2D grid of potential sources          %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-dx=1;     % cell spacing (km)
+dx=10;     % cell spacing (km)
 dy=dx;    
-xmin = -15; xmax = 15;   % (km)
-ymin = -15; ymax = 15;   % (km)
+xmin = -150; xmax = 150;   % (km)
+ymin = -150; ymax = 150;   % (km)
 
 x_bp = xmin:dx:xmax;
 y_bp = ymin:dy:ymax;
@@ -169,13 +169,13 @@ xlim([t(1) t(end)])
 set(gca,'FontSize',14)
 saveas(gcf,[outdir,'AzimuthalDistribution'],'png')
 saveas(gcf,[outdir,'AzimuthalDistribution'],'fig')
-return
+
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %        Filter and Convert to Frequency Domain          %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 fnyq = 1/dt/2;      % Nyquist frequency
-lowF  = 1e-6;       % Hz
-highF = 8.0;        % Hz
+lowF  = 0.5;       % Hz
+highF = 2.0;        % Hz
 
 DataFilt = Data;
 [B,A] = butter(4,[lowF highF]./fnyq);
@@ -197,13 +197,6 @@ for i = 1:nsta
     spec = fft(DataFilt(i,tw:end),nfft);
     spec = spec(1:nfft/2+1);
     DataSpec(i,:) = spec;
-end
-
-% Get the Green's function spectra
-GFw = zeros(nDiv,nfft/2+1);
-for i = 1:nDiv
-    gw = fft(GF(i,tw:end),nfft);
-    GFw(i,:) = gw(1:nfft/2+1);
 end
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -369,24 +362,16 @@ saveas(gcf,[outdir,'Waveforms'],'fig')
 %                 Source Time Extraction                 %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 
-% Determine phase from assumed Green's functions
-PhaseG = zeros(size(GFw));
-for i = 1:nDiv
-    PhaseG(i,:) = atan2(imag(GFw(i,:)),real(GFw(i,:)));
-end
-
 % Select key subevents from models
 factor = 0.25;      % cut-off ratio to peak spectral power
 subevents = find(CumSpecPower > factor*max(CumSpecPower));
 nSu = length(subevents);
 
 % Median subevent time estimate
-subTime = zeros(nDiv,nSu);     % Phase: Model - GF
 subTimeM = zeros(nDiv,nSu);    % Phase: Model
 subTimeR = zeros(nDiv,nSu);    % Phase: Model - min(Tsub)
 
 % Mean subevent time estimate
-subTime2 = zeros(nDiv,nSu);    % Phase: Model - GF
 subTime2M = zeros(nDiv,nSu);   % Phase: Model
 subTime2R = zeros(nDiv,nSu);   % Phase: Model - min(Tsub)
 
@@ -408,31 +393,26 @@ for i = 1:nDiv
          sub = subevents(j);
          mf1 = squeeze(mm(:,i,sub));
          PhaseM = atan2(imag(mf1),real(mf1));
-         PhaseT = PhaseM - PhaseG(i,:)';
  
-         Tau(i,j,:) = unwrap(PhaseT')./(-2*pi*fspace);
          TauM(i,j,:) = unwrap(PhaseM')./(-2*pi*fspace);
         
          subTimeM(i,j) = median(TauM(i,j,ra));
          subTime2M(i,j) = mean(TauM(i,j,ra));
-         subTime(i,j) = median(Tau(i,j,ra));
-         subTime2(i,j) = mean(Tau(i,j,ra));
-         
     end
 end
  
 firstS = zeros(nDiv,1);
 for i = 1:nDiv
-    firstS(i) = find(subTime(i,:) == min(subTime(i,:)));
+    firstS(i) = find(subTimeM(i,:) == min(subTimeM(i,:)));
 end
  for i=1:nDiv
      for j=1:nSu
          
          figure(7);
          subplot(figx,figy,(j-1)*nDiv+i)
-         plot(fspace,squeeze(Tau(i,j,:)))
+         plot(fspace,squeeze(TauM(i,j,:)))
          title(sprintf('Subarray %d, subevent %d',i,j));
-         ylabel('M-G Phase')
+         ylabel('Mraw Phase')
          xlim([0.50 max(fspace)])
          
          figure(8);
@@ -449,28 +429,26 @@ end
     
  end
 figure(7);
-saveas(gcf,[outdir,'SourceTime_MG'],'png')
-saveas(gcf,[outdir,'SourceTime_MG'],'fig')
+saveas(gcf,[outdir,'SourceTime_Mraw'],'png')
+saveas(gcf,[outdir,'SourceTime_Mraw'],'fig')
 figure(8);
 saveas(gcf,[outdir,'SourceTime_M'],'png')
 saveas(gcf,[outdir,'SourceTime_M'],'fig')
 
 % Median subevent time estimate
-subTime = reshape(subTime,nDiv*nSu,1);
 subTimeM = reshape(subTimeM,nDiv*nSu,1);
 subTimeR = reshape(subTimeR,nDiv*nSu,1);
 
 % Mean subevent time estimate
-subTime2 = reshape(subTime2,nDiv*nSu,1);
 subTime2M = reshape(subTime2M,nDiv*nSu,1);
 subTime2R = reshape(subTime2R,nDiv*nSu,1);
 
-outT = [subTimeR,subTime2R,subTime,subTime2,subTimeM,subTime2M];
+outT = [subTimeR,subTime2R,subTimeM,subTime2M];
 TimeFile = fopen([outdir,'SourceTimeInfo.txt'],'w');
-fprintf(TimeFile,'Mdiff & Adiff & MG & AG  & Mraw & Araw \n');
+fprintf(TimeFile,'Mdiff & Adiff  & Mraw & Araw \n');
 for i = 1:nSu
     fprintf(TimeFile,'Subevent %d \n',i);
-    fprintf(TimeFile,'%.3f %.3f %.3f %.3f %.3f %.3f \n',outT((i-1)*nDiv+1:i*nDiv,:)');
+    fprintf(TimeFile,'%.3f %.3f %.3f %.3f \n',outT((i-1)*nDiv+1:i*nDiv,:)');
 end
 fclose(TimeFile);
 
@@ -485,4 +463,4 @@ info.tw = tw;
 info.nDiv = nDiv;
 info.Div = Div;
 info.DivPop = DivPop;
-save([outdir,'InversionOutput.mat'],'uom','synV','specPower','mm','GF','fspace','info','-v7.3');
+save([outdir,'InversionOutput.mat'],'uom','synV','specPower','mm','fspace','info','-v7.3');
