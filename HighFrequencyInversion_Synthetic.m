@@ -10,7 +10,7 @@ clear all;
 close all;
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Homogeneous_circle_2array_freqbins/';
+outdir = 'Homogeneous_circle_2array_05_2/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -170,7 +170,7 @@ saveas(gcf,[outdir,'StationMap'],'fig')
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %              Make Synthetic Seismograms                %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-fc = 2;                  % dominant frequency (Hz)
+fc = 1;                  % dominant frequency (Hz)
 dt = 0.05;               % sampling
 nsmooth=round(1/fc/dt);  % smoothing for plotting (period / sampling)
 t=-5:dt:(max(t_ev)+3);   
@@ -226,7 +226,7 @@ for jj=1:nsta
     end
     Data(jj,:)=Data(jj,:)./max(Data(jj,:));
     % add white gaussian noise
-    Data(jj,:) = awgn(Data(jj,:),SNR);
+    %Data(jj,:) = awgn(Data(jj,:),SNR);
 end
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -256,7 +256,7 @@ saveas(gcf,[outdir,'AzimuthalDistribution'],'fig')
 %        Filter and Convert to Frequency Domain          %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 fnyq = 1/dt/2;      % Nyquist frequency
-lowF  = 0.5;       % Hz
+lowF  = 0.2;       % Hz
 highF = 2.0;        % Hz
 
 DataFilt = Data;
@@ -273,8 +273,10 @@ ntw = length(t(tw:end));
 nfft = 2^nextpow2(length(t(tw:end)));
 fspace0 = 1/dt * (0:(nfft/2))/nfft;
 nftot = length(fspace0);      % number of frequencies
-ffilt = find(fspace0 >= lowF & fspace0 <= highF);
+ffilt = find(fspace0 >= 0 & fspace0 <= 5);
+ffilt = find(fspace0 >= 1,1,'first');
 fspace = fspace0(ffilt);
+
 nf = length(fspace);
 
 % Bin the frequencies
@@ -282,20 +284,21 @@ nf = length(fspace);
 binpop = 10;
 nfbin = ceil(nf/binpop);
 
-DataSpec = zeros(nsta,nftot);
+DataSpec = zeros(nsta,nf);
 for i = 1:nsta
     spec = fft(DataFilt(i,tw:end),nfft);
     spec = spec(1:nfft/2+1);
-    DataSpec(i,:) = spec;
+    DataSpec(i,:) = spec(ffilt);
 end
 
 % Get the Green's function spectra
-GFw = zeros(nDiv,nfft/2+1);
+GFw = zeros(nDiv,nf);
 for i = 1:nDiv
     gw = fft(GF(i,tw:end),nfft);
-    GFw(i,:) = gw(1:nfft/2+1);
+    gwtemp = gw(1:nfft/2+1);
+    GFw(i,:) = gwtemp(ffilt);
 end
-return
+
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Prepare and Perform Inversion              %
 %              for each Discrete Frequency               %
@@ -352,7 +355,7 @@ parfor f = 1:nf       % parallelized over frequency bins
     end
     
     % Perform the Inversion
-    lambda = 1;                         % Sparsity prior weight
+    lambda = 5;                         % Sparsity prior weight
     pl = sqrt(nDiv)*ones(1,ns);        
     m = GroupLasso(u,Kf,pl,lambda,ns,ncomb);
     mout(f,:) = m;
@@ -377,7 +380,7 @@ parfor f = 1:nf       % parallelized over frequency bins
 end
 toc
 
-r = uom - synV;
+r = DataSpec - syn;
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %            Plot Spectral Power Distribution            %

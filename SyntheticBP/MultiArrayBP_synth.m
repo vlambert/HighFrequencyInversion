@@ -11,7 +11,7 @@ close all;
 tic;
 addpath('../');
 scrsz=get(0,'ScreenSize');
-outdir = 'WorldArray/';
+outdir = 'WorldArray/3array_AUincoh';
 frameDir = 'Frames/';
 movieDir = 'movies/';
 if ~exist(outdir,'dir')
@@ -94,6 +94,9 @@ y_st=R.*cos(th_st);
 
 Div = (1:nsta)';
 DivPop = [0;size(USArray,1);size(EUArray,1);size(AUArray,1)];
+Div1 = (1:size(USArray,1))';
+Div2 = (size(USArray,1)+1:(size(USArray,1)+size(EUArray,1)))';
+Div3 = (Div2(end)+1:Div(end))';
 
 % Azimuthal weighting
 az1=[th_st(end)-2*pi,th_st(1:end-1)];
@@ -123,7 +126,7 @@ set(gca,'FontSize',14)
 set(gca,'color','none')
 title('Station Distribution')
 saveas(gcf,[outdir,'StationMap'],'png')
-return
+
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %              Make Synthetic Seismograms                %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
@@ -147,6 +150,10 @@ multiple = zeros(nsta,2);
 multiple(:,1) = 1;    % number of multiples
 multiple(:,2) = 2;    % time delay for each multiple
 multiple(:,3) = 1;    % damping factor
+
+multiple(Div3,1) = 2;    % number of multiples
+multiple(Div3,2) = 0.5;  % time delay for each multiple
+multiple(Div3,3) = 1;    % damping factor
 
 % Make synthetics wrt first arrival
 Data=zeros(nsta, nt);
