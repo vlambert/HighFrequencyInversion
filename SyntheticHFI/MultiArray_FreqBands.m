@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'MultiArray/diffG/';
+outdir = 'MultiArray/diffG_binned_WGN_SNR20';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -127,7 +127,7 @@ saveas(gcf,[outdir,'StationMap'],'fig')
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %              Make Synthetic Seismograms                %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-fc = 2;                  % dominant frequency (Hz)
+fc = 1;                  % dominant frequency (Hz)
 dt = 0.05;               % sampling
 nsmooth=round(1/fc/dt);  % smoothing for plotting (period / sampling)
 t=-5:dt:(max(t_ev)+3);   
@@ -174,6 +174,7 @@ Data=zeros(nsta, nt);
 % Distance and travel time from hypocenter to each station 
 dist = sqrt( ( x_ev(1) - x_st ).^2 + ( y_ev(1) - y_st ).^2 )/111.2; 
 t0j = t_ev(1)+interp1(P_trav(:,1),P_trav(:,2),dist,'linear','extrap'); 
+SNR = 20; % signal - to - noise ratio
 
 for jj=1:nsta
     for ii=1:n_ev
@@ -184,6 +185,8 @@ for jj=1:nsta
         Data(jj,:) = Data(jj,:) + m_ev(ii)*GreensFunctions(t,trav,0,fd(jj),multiple(jj,1),multiple(jj,2),multiple(jj,3));
     end
     Data(jj,:)=Data(jj,:)./max(Data(jj,:));
+    % add white gaussian noise
+    Data(jj,:) = awgn(Data(jj,:),SNR);
 end
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -228,23 +231,35 @@ ntw = length(t(tw:end));
 
 % Fourier transform the data
 nfft = 2^nextpow2(length(t(tw:end)));
-fspace = 1/dt * (0:(nfft/2))/nfft;
-nf = length(fspace);      % number of frequencies
+fspace0 = 1/dt * (0:(nfft/2))/nfft;
+nftot = length(fspace0);      % number of frequencies
+ffilt = find(fspace0 >= lowF & fspace0 <= highF);
+
+% Bin the frequencies
+binpop = 10;
+overflow = binpop - mod(length(ffilt),binpop);
+if overflow ~= 0
+   ffilt = ffilt(1):(ffilt(end)+overflow); 
+end
+fspace = fspace0(ffilt);
+nf = length(fspace); % number of frequencies
+nfbin = nf/binpop;
 
 DataSpec = zeros(nsta,nf);
 for i = 1:nsta
     spec = fft(DataFilt(i,tw:end),nfft);
     spec = spec(1:nfft/2+1);
-    DataSpec(i,:) = spec;
+    DataSpec(i,:) = spec(ffilt);
 end
 
 % Get the Green's function spectra
-GFw = zeros(nDiv,nfft/2+1);
+GFw = zeros(nDiv,nf);
 for i = 1:nDiv
     gw = fft(GF(i,tw:end),nfft);
-    GFw(i,:) = gw(1:nfft/2+1);
+    gwtemp = gw(1:nfft/2+1);
+    GFw(i,:) = gwtemp(ffilt);
 end
-
+return
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Prepare and Perform Inversion              %
 %              for each Discrete Frequency               %
@@ -257,6 +272,7 @@ np = sum(DivPop);         % number of stations in inversion population
 ncomb = ns*nDiv;          % total number of model parameters
 
 % Output models
+moutTemp = zeros(nfbin,ncomb*binpop);
 mout = zeros(nf,ncomb);
 mm   = zeros(nf,nDiv,ns);
 
@@ -264,23 +280,27 @@ mm   = zeros(nf,nDiv,ns);
 uom = zeros(np*nf,1);
 
 % Synthetic spectra 
+syntmp = zeros(np*binpop,nfbin);
 syn = zeros(np,nf);
 synV = zeros(size(uom));
 
 % Spectral Power for each source
 specPower = zeros(nDiv,ns);
+specPowerF = zeros(nfbin,nDiv,ns);
 
 tic
-
-parfor f = 1:nf        % parallelized over frequency
-    f0 = fspace(f); % frequency
+parfor f = 1:nfbin        % parallelized over frequency
+    findices = ((f-1)*binpop+1):(f*binpop);
+    f0s = fspace(findices); % frequency
     
     % Fill data vectors for frequency
-    u = DataSpec(Div,f);
+    u = DataSpec(Div,findices);
+    u = reshape(u,np*binpop,1)
 
     % Create kernels for each source location and station
     K1 = zeros(np,ns);
     Kf = zeros(np,ncomb);
+    
     
     for d = 1:nDiv
         % find the station indices within the subarray
@@ -291,40 +311,92 @@ parfor f = 1:nf        % parallelized over frequency
             % Calculate travel time from each potential source
             dis = sqrt( ( x_xi-x_st(Div(popu)) ).^2 + ( y_xi-y_st(Div(popu)) ).^2 )/111.2;
             tij =interp1(P_trav(:,1),P_trav(:,2),dis,'linear','extrap');
-            
-            % Fill kernels
-            K1(Div(popu),i) = (exp(2i*pi*f0*(t0j1(Div(popu)) - tij)));
-            Kf(Div(popu) ,(d-1)*ns+i) = (exp(2i*pi*f0*(t0j1(Div(popu)) - tij)));
+            for fi = 1:binpop
+                % Fill kernels
+                f0i = f0s(fi);
+                K1((fi-1)*np+Div(popu),(fi-1)*ns+i) = (exp(2i*pi*f0i*(t0j1(Div(popu)) - tij)));
+                Kf((fi-1)*np+Div(popu),(fi-1)*nDiv*ns+(d-1)*ns+i) = (exp(2i*pi*f0i*(t0j1(Div(popu)) - tij)));
+            end
         end
     end
     
     % Perform the Inversion
-    lambda = 1;                         % Sparsity prior weight
+    lambda = 5;                         % Sparsity prior weight
     pl = sqrt(nDiv)*ones(1,ns);        
-    m = GroupLasso(u,Kf,pl,lambda,ns,ncomb);
-    mout(f,:) = m;
-    % Generate synthetic spectra
-    syn(:,f) = Kf*m;
-
-    % Calculate power and synthetics at each frequency from the subevents
-    mmtmp = zeros(nDiv,ns);
-    tmpspecPower = zeros(nDiv,ns);
-    for d = 1:nDiv
-        popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
-        Ktemp = K1(Div(popu),:);
-        for s = 1:ns
-            mmtmp(d,s) = m((d-1)*ns+s);
-            tmp = Ktemp(:,s)*mmtmp(d,s);
-            tmpspecPower(d,s) =  sum(real(tmp).*real(tmp));
+    m = GroupLassoBin(u,Kf,pl,lambda,ns,ncomb,binpop);
+    
+    syntmp(:,f) = Kf*m;
+    tmpspecPowerF = zeros(nDiv,ns);
+    moutTemp(f,:) = m
+    mm_out = zeros(nfbin,nDiv,ns);
+    for fi = 1:binpop
+        findex = findices(fi);
+        fpop = ((fi-1)*np+1:fi*np);
+        fsource = ((fi-1)*ncomb+1:fi*ncomb);
+        mtmp = m(fsource);
+    
+        % Calculate power and synthetics at each frequency from the subevents
+        mmtmp = zeros(nDiv,ns);
+        tmpspecPower = zeros(nDiv,ns);
+        for d = 1:nDiv
+            popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
+            Ktemp = K1((fi-1)*np+Div(popu),((fi-1)*ns+1):fi*ns);
+            for s = 1:ns
+                mmtmp(d,s) = mtmp((d-1)*ns+s);
+                tmp = Ktemp(:,s)*mmtmp(d,s);
+                tmpspecPower(d,s) =  sum(real(tmp).*real(tmp));
+            end
         end
+        tmpspecPowerF = tmpspecPowerF + tmpspecPower;
+        specPower = specPower + tmpspecPower;
     end
-    specPower = specPower + tmpspecPower;
-    mm(f,:,:) = mmtmp;
+    specPowerF(f,:,:) = tmpspecPowerF;
+    
 %%
 end
 toc
-%%
+%% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+%               Calculate Error for Fits                 %
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
+
+ErrorFBin = zeros(nfbin,1);
+for f = 1:nfbin
+    findices = ((f-1)*binpop+1):(f*binpop);
+    for fi = 1:binpop
+        findex = findices(fi);
+        fpop = ((fi-1)*np+1:fi*np);
+        fsource = ((fi-1)*ncomb+1:fi*ncomb);
+        mout(findex,:) = moutTemp(f,fsource);
+        for d= 1:nDiv
+            for s = 1:ns
+                mm(findex,d,s) =mout(findex,(d-1)*ns+s);
+            end
+        end
+        syn(:,findex) = syntmp(fpop,f);
+    end
+    ErrorFBin(f) = 1/sqrt(np)*norm(DataSpec(:,findices) - syn(:,findices));
+end
+
+ErrorFile = fopen([outdir,'ModelErrorInfo.txt'],'w');
+for f = 1:nfbin
+    findices = ((f-1)*binpop+1):(f*binpop);
+    f_floor = fspace(findices(1));
+    f_ceil  = fspace(findices(end));
+    fprintf(ErrorFile,'%.2f - %.2f   %.2f \n',f_floor,f_ceil,ErrorFBin(f));
+end
+
+ErrorArray = zeros(nDiv,1);
+for d = 1:nDiv
+   popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
+   ErrorArray(d) = 1/sqrt(DivPop(d+1)) * norm(DataSpec(Div(popu),:) - syn(Div(popu),:));
+   fprintf(ErrorFile,'Div %d   %.2f \n',d,ErrorArray(d));
+end
 r = DataSpec - syn;
+error = norm(r);
+reducedError = 1/sqrt(np)*error;
+
+fprintf(ErrorFile,'Sum Error %.2f \n',reducedError);
+fclose(ErrorFile);
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %            Plot Spectral Power Distribution            %
@@ -357,6 +429,41 @@ saveas(gcf,[outdir,'SubeventLocation'],'fig')
 
 % Cumulate Spectral Power
 CumSpecPower = sum(specPower,1);
+
+%% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+%          Plot Spectral Power Frequency Bins            %
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
+for f = 1:nfbin
+    findices = ((f-1)*binpop+1):(f*binpop);
+    f_floor = fspace(findices(1));
+    f_ceil  = fspace(findices(end));
+    figure(4);clf;
+    hold on;
+    qy = min(3,nDiv+1);
+    if qy < 3
+        qx = 1;
+    else
+        qx = ceil((nDiv+1)/3);
+    end
+    set(gcf,'Position',[1 1 qy*425 qx*280])
+    for i = 1:nDiv
+       subplot(qx,qy,i)
+       grid = reshape(squeeze(specPowerF(f,i,:)),nybp,nxbp);
+       pcolor(x_bp-dx/2,y_bp-dy/2,grid)
+       colorbar;
+       title(sprintf('Subarray %d Power',i))
+       axis equal tight
+    end
+    subplot(qx,qy,nDiv+1)
+    grid = reshape(sum(squeeze(specPowerF(f,:,:)),1),nybp,nxbp);
+    pcolor(x_bp-dx/2,y_bp-dy/2,grid)
+    colorbar
+    title(sprintf('Combined Power: %.2f - %.2f Hz',f_floor,f_ceil))
+    axis equal tight
+    saveas(gcf,[outdir,sprintf('SubeventLocation_band_%d',f)],'png')
+    saveas(gcf,[outdir,sprintf('SubeventLocation_band_%d',f)],'fig') 
+    
+end
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %     Plot Data and Synthetic Spectra and Waveforms      %
@@ -403,6 +510,8 @@ for i = 1:nDiv
 end
 saveas(gcf,[outdir,'Waveforms'],'png')
 saveas(gcf,[outdir,'Waveforms'],'fig')
+
+
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                 Source Time Extraction                 %
@@ -518,6 +627,7 @@ fclose(TimeFile);
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 info.lowF = lowF;
 info.highF = highF;
+info.binpop = binpop;
 info.fspace = fspace;
 info.t = t;
 info.tw = tw;

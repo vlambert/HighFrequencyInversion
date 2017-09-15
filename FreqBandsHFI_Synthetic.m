@@ -397,7 +397,10 @@ parfor f = 1:nfbin       % parallelized over frequency bins
 %%
 end
 toc
-%%
+%% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
+%               Calculate Error for Fits                 %
+% % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
+
 ErrorFBin = zeros(nfbin,1);
 for f = 1:nfbin
     findices = ((f-1)*binpop+1):(f*binpop);
@@ -668,6 +671,7 @@ fclose(TimeFile);
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 info.lowF = lowF;
 info.highF = highF;
+info.binpop = binpop;
 info.fspace = fspace;
 info.t = t;
 info.tw = tw;
