@@ -10,7 +10,7 @@ clear all;
 close all;
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Homogeneous_circle_2array_05_2/';
+outdir = 'Homogeneous_circle_2array2G_binned_GWN_SNR10/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -191,9 +191,9 @@ multiple(:,1) = 1;    % number of multiples
 multiple(:,2) = 2;    % time delay for each multiple
 multiple(:,3) = 1;    % damping factor
 
-%multiple(Div2,1) = 2;    % number of multiples
-%multiple(Div2,2) = 0.5;  % time delay for each multiple
-%multiple(Div2,3) = 1;    % damping factor
+multiple(Div2,1) = 2;    % number of multiples
+multiple(Div2,2) = 0.5;  % time delay for each multiple
+multiple(Div2,3) = 1.3;    % damping factor
 
 %multiple(Div3,1) = 3;    % number of multiples
 %multiple(Div3,2) = 0.6;  % time delay for each multiple
@@ -214,7 +214,7 @@ Data=zeros(nsta, nt);
 % Distance and travel time from hypocenter to each station 
 dist = sqrt( ( x_ev(1) - x_st ).^2 + ( y_ev(1) - y_st ).^2 )/111.2; 
 t0j = t_ev(1)+interp1(P_trav(:,1),P_trav(:,2),dist,'linear','extrap'); 
-SNR = 20; % signal - to - noise ratio
+SNR = 10; % signal - to - noise ratio
 
 for jj=1:nsta
     for ii=1:n_ev
@@ -226,7 +226,7 @@ for jj=1:nsta
     end
     Data(jj,:)=Data(jj,:)./max(Data(jj,:));
     % add white gaussian noise
-    %Data(jj,:) = awgn(Data(jj,:),SNR);
+    Data(jj,:) = awgn(Data(jj,:),SNR);
 end
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -273,7 +273,7 @@ ntw = length(t(tw:end));
 nfft = 2^nextpow2(length(t(tw:end)));
 fspace0 = 1/dt * (0:(nfft/2))/nfft;
 nftot = length(fspace0);      % number of frequencies
-ffilt = find(fspace0 >= 0 & fspace0 <= 3);
+ffilt = find(fspace0 >= lowF & fspace0 <= highF);
 
 % Bin the frequencies
 binpop = 10;
@@ -398,6 +398,7 @@ parfor f = 1:nfbin       % parallelized over frequency bins
 end
 toc
 %%
+ErrorFBin = zeros(nfbin,1);
 for f = 1:nfbin
     findices = ((f-1)*binpop+1):(f*binpop);
     for fi = 1:binpop
@@ -412,10 +413,31 @@ for f = 1:nfbin
         end
         syn(:,findex) = syntmp(fpop,f);
     end
+    ErrorFBin(f) = 1/sqrt(np)*norm(DataSpec(:,findices) - syn(:,findices));
 end
 
+ErrorFile = fopen([outdir,'ModelErrorInfo.txt'],'w');
+for f = 1:nfbin
+    findices = ((f-1)*binpop+1):(f*binpop);
+    f_floor = fspace(findices(1));
+    f_ceil  = fspace(findices(end));
+    fprintf(ErrorFile,'%.2f - %.2f   %.2f \n',f_floor,f_ceil,ErrorFBin(f));
+end
 
+ErrorArray = zeros(nDiv,1);
+for d = 1:nDiv
+   popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
+   ErrorArray(d) = 1/sqrt(DivPop(d+1)) * norm(DataSpec(Div(popu),:) - syn(Div(popu),:));
+   fprintf(ErrorFile,'Div %d   %.2f \n',d,ErrorArray(d));
+end
 r = DataSpec - syn;
+error = norm(r);
+reducedError = 1/sqrt(np)*error;
+
+fprintf(ErrorFile,'Sum Error %.2f \n',reducedError);
+fclose(ErrorFile);
+
+
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %            Plot Spectral Power Distribution            %

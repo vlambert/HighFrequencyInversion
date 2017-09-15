@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Aug22/FourSources/TryUniform2Div_stationshift/';
+outdir = 'MultiArray/diffG/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -78,6 +78,7 @@ for st=1:nsta
 end
 
 az = az/180*pi;
+th_st = az;
 
 % [th_st, index]=sort(az);
 % R=gcarc(index)';
@@ -143,18 +144,21 @@ P_trav = load('P_trav_607_taup.txt');    % TauP with IASP91 velocity model
 
 % Distortions for multiple phases and attenuation
 multiple = zeros(nsta,2);
+Div1p = ((DivPop(1)+1):(sum(DivPop(1:2))));
 multiple(:,1) = 1;    % number of multiples
 multiple(:,2) = 2;    % time delay for each multiple
 multiple(:,3) = 1;    % damping factor
 
-%multiple(Div2,1) = 2;    % number of multiples
-%multiple(Div2,2) = 0.5;  % time delay for each multiple
-%multiple(Div2,3) = 1;    % damping factor
+Div2p = ((DivPop(2)+1):(sum(DivPop(2:3))));
+multiple(Div(Div2p),1) = 2;    % number of multiples
+multiple(Div(Div2p),2) = 0.5;  % time delay for each multiple
+multiple(Div(Div2p),3) = 1.5;    % damping factor
 
-%multiple(Div3,1) = 3;    % number of multiples
-%multiple(Div3,2) = 0.6;  % time delay for each multiple
+Div3p = (sum(DivPop(2:3)+1):(sum(DivPop(2:4))));
+multiple(Div(Div3p),1) = 3;    % number of multiples
+multiple(Div(Div3p),2) = 0.6;  % time delay for each multiple
+multiple(Div(Div3p),3) = 1.5;    % damping factor
 
-%multiple(Div3,3) = 0;    % damping factor
 fd = fc *ones(nsta,1);
 
 % Produce Green's functions for each subarray
@@ -319,8 +323,8 @@ parfor f = 1:nf        % parallelized over frequency
 %%
 end
 toc
-
-r = uom - synV;
+%%
+r = DataSpec - syn;
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %            Plot Spectral Power Distribution            %
