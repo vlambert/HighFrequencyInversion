@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'MultiArray/diffG_binned_WGN_SNR20';
+outdir = 'MultiArray/diffG_binned_WGN_2Hz_SNR20Lam1_scaletime_moreSubs/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -25,10 +25,10 @@ EVLO=153.281;
 EVDP=607;
 
 %subevent locations and times
-x_ev=[0 1 8    10];% 20 25 ]./2; % km
-y_ev=[0 4 6    7];% 10 10 ]./2; % km
-t_ev=[0 3  7   9 ];%10 12];     % seconds
-m_ev=[1 1  1   1];%  1  1];     % moment normalized to event 1
+x_ev=[0 5 10 50 60 80    100];% 20 25 ]./2; % km
+y_ev=[0 15 40 50 54 60    70];% 10 10 ]./2; % km
+t_ev=[0 5 14 19 25 31   38 ];%10 12];     % seconds
+m_ev=[1 1 1 1 1 1  1];%  1  1];     % moment normalized to event 1
 n_ev=length(x_ev);
 
 % convert km to deg
@@ -40,10 +40,10 @@ lat_ev = EVLA+y_ev/deg2km;
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %        Construct 2D grid of potential sources          %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-dx=1;     % cell spacing (km)
+dx=10;     % cell spacing (km)
 dy=dx;    
-xmin = -5; xmax = 13;   % (km)
-ymin = -5; ymax = 10;   % (km)
+xmin = -50; xmax = 130;   % (km)
+ymin = -50; ymax = 100;   % (km)
 
 x_bp = xmin:dx:xmax;
 y_bp = ymin:dy:ymax;
@@ -76,7 +76,6 @@ for st=1:nsta
     az(st,1)=AZ_t;
     gcarc(st,1)=DIST_t;
 end
-
 az = az/180*pi;
 th_st = az;
 
@@ -127,10 +126,10 @@ saveas(gcf,[outdir,'StationMap'],'fig')
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %              Make Synthetic Seismograms                %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-fc = 1;                  % dominant frequency (Hz)
+fc = 2;                  % dominant frequency (Hz)
 dt = 0.05;               % sampling
 nsmooth=round(1/fc/dt);  % smoothing for plotting (period / sampling)
-t=-5:dt:(max(t_ev)+3);   
+t=-5:dt:(max(t_ev)+10);   
 nt=length(t);
 
 % Moment Rate Function
@@ -154,7 +153,7 @@ multiple(Div(Div2p),1) = 2;    % number of multiples
 multiple(Div(Div2p),2) = 0.5;  % time delay for each multiple
 multiple(Div(Div2p),3) = 1.5;    % damping factor
 
-Div3p = (sum(DivPop(2:3)+1):(sum(DivPop(2:4))));
+Div3p = (sum(DivPop(1:3))+1):(sum(DivPop(1:4)));
 multiple(Div(Div3p),1) = 3;    % number of multiples
 multiple(Div(Div3p),2) = 0.6;  % time delay for each multiple
 multiple(Div(Div3p),3) = 1.5;    % damping factor
@@ -174,7 +173,7 @@ Data=zeros(nsta, nt);
 % Distance and travel time from hypocenter to each station 
 dist = sqrt( ( x_ev(1) - x_st ).^2 + ( y_ev(1) - y_st ).^2 )/111.2; 
 t0j = t_ev(1)+interp1(P_trav(:,1),P_trav(:,2),dist,'linear','extrap'); 
-SNR = 20; % signal - to - noise ratio
+SNR = 30; % signal - to - noise ratio
 
 for jj=1:nsta
     for ii=1:n_ev
@@ -184,10 +183,18 @@ for jj=1:nsta
         % time wrt first arrival
         Data(jj,:) = Data(jj,:) + m_ev(ii)*GreensFunctions(t,trav,0,fd(jj),multiple(jj,1),multiple(jj,2),multiple(jj,3));
     end
-    Data(jj,:)=Data(jj,:)./max(Data(jj,:));
+    %Data(jj,:)=Data(jj,:)./max(Data(jj,:));
     % add white gaussian noise
     Data(jj,:) = awgn(Data(jj,:),SNR);
 end
+%%
+figure(10);clf
+tsamp = find(t>=-3 & t<=5);
+for d = 1: nDiv
+   subplot(nDiv,1,d)
+   plot(t(tsamp),GF(d,tsamp)); 
+end
+
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Plot waveform versus azimuth               %
@@ -259,7 +266,7 @@ for i = 1:nDiv
     gwtemp = gw(1:nfft/2+1);
     GFw(i,:) = gwtemp(ffilt);
 end
-return
+
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Prepare and Perform Inversion              %
 %              for each Discrete Frequency               %
@@ -321,7 +328,7 @@ parfor f = 1:nfbin        % parallelized over frequency
     end
     
     % Perform the Inversion
-    lambda = 5;                         % Sparsity prior weight
+    lambda = 1;                         % Sparsity prior weight
     pl = sqrt(nDiv)*ones(1,ns);        
     m = GroupLassoBin(u,Kf,pl,lambda,ns,ncomb,binpop);
     
@@ -402,6 +409,7 @@ fclose(ErrorFile);
 %            Plot Spectral Power Distribution            %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 figure(3);clf;
+set(gcf,'renderer','Painters')
 hold on;
 qy = min(3,nDiv+1);
 if qy < 3
@@ -413,19 +421,19 @@ set(gcf,'Position',[1 1 qy*425 qx*280])
 for i = 1:nDiv
    subplot(qx,qy,i)
    grid = reshape(specPower(i,:),nybp,nxbp);
-   pcolor(x_bp-dx/2,y_bp-dy/2,grid)
+   pcolor(x_bp-dx/2,y_bp-dy/2,1/(DivPop(i+1)*nf*nDiv)*grid)
    colorbar;
    title(sprintf('Subarray %d Power',i))
    axis equal tight
 end
 subplot(qx,qy,nDiv+1)
-grid = reshape(sum(specPower,1),nybp,nxbp);
+grid = reshape(1/(np*nf*nDiv)*sum(specPower,1),nybp,nxbp);
 pcolor(x_bp-dx/2,y_bp-dy/2,grid)
 colorbar
 title(sprintf('Combined Power'))
 axis equal tight
-saveas(gcf,[outdir,'SubeventLocation'],'png')
-saveas(gcf,[outdir,'SubeventLocation'],'fig')
+saveas(gcf,[outdir,'NormSubeventLocation'],'epsc')
+saveas(gcf,[outdir,'NormSubeventLocation'],'fig')
 
 % Cumulate Spectral Power
 CumSpecPower = sum(specPower,1);
@@ -438,6 +446,7 @@ for f = 1:nfbin
     f_floor = fspace(findices(1));
     f_ceil  = fspace(findices(end));
     figure(4);clf;
+    set(gcf,'renderer','Painters')
     hold on;
     qy = min(3,nDiv+1);
     if qy < 3
@@ -449,19 +458,19 @@ for f = 1:nfbin
     for i = 1:nDiv
        subplot(qx,qy,i)
        grid = reshape(squeeze(specPowerF(f,i,:)),nybp,nxbp);
-       pcolor(x_bp-dx/2,y_bp-dy/2,grid)
+       pcolor(x_bp-dx/2,y_bp-dy/2,1/(DivPop(i+1)*binpop)*grid)
        colorbar;
        title(sprintf('Subarray %d Power',i))
        axis equal tight
     end
     subplot(qx,qy,nDiv+1)
     grid = reshape(sum(squeeze(specPowerF(f,:,:)),1),nybp,nxbp);
-    pcolor(x_bp-dx/2,y_bp-dy/2,grid)
+    pcolor(x_bp-dx/2,y_bp-dy/2,1/(np*binpop*nDiv)*grid)
     colorbar
     title(sprintf('Combined Power: %.2f - %.2f Hz',f_floor,f_ceil))
     axis equal tight
-    saveas(gcf,[outdir,sprintf('SubeventLocation_band_%d',f)],'png')
-    saveas(gcf,[outdir,sprintf('SubeventLocation_band_%d',f)],'fig') 
+    saveas(gcf,[outdir,sprintf('NormSubeventLocation_band_%d',f)],'epsc')
+    saveas(gcf,[outdir,sprintf('NormSubeventLocation_band_%d',f)],'fig') 
     
 end
 
@@ -481,6 +490,7 @@ end
 
 figure(6);clf;
 set(gcf,'Position',[1 1 1140 nDiv*190])
+set(gcf,'renderer','Painters')
 for i = 1:nDiv
     popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
     
@@ -508,7 +518,7 @@ for i = 1:nDiv
     title('Inverted u (t)')
     xlim([t(tw) t(end)])
 end
-saveas(gcf,[outdir,'Waveforms'],'png')
+saveas(gcf,[outdir,'Waveforms'],'epsc')
 saveas(gcf,[outdir,'Waveforms'],'fig')
 
 
@@ -634,4 +644,4 @@ info.tw = tw;
 info.nDiv = nDiv;
 info.Div = Div;
 info.DivPop = DivPop;
-save([outdir,'InversionOutput.mat'],'uom','synV','specPower','mm','GF','fspace','info','-v7.3');
+save([outdir,'InversionOutput.mat'],'uom','syn','specPower','specPowerF','mm','GF','fspace','info','-v7.3');

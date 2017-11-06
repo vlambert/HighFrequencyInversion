@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'MultiArray/diffG_0_9_1_LamSearch/';
+outdir = 'MultiArray/diffG_0_9_1_LamSearch_nonSt_lim2';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -25,10 +25,10 @@ EVLO=153.281;
 EVDP=607;
 
 %subevent locations and times
-x_ev=[0 1 8    10];% 20 25 ]./2; % km
-y_ev=[0 4 6    7];% 10 10 ]./2; % km
-t_ev=[0 3  7   9 ];%10 12];     % seconds
-m_ev=[1 1  1   1];%  1  1];     % moment normalized to event 1
+x_ev=[0 5 10 50 60 80    100];
+y_ev=[0 15 40 50 54 60    70];
+t_ev=[0 5 14 19 25 31   38 ];
+m_ev=[1 1 1 1 1 1  1];
 n_ev=length(x_ev);
 
 % convert km to deg
@@ -40,10 +40,12 @@ lat_ev = EVLA+y_ev/deg2km;
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %        Construct 2D grid of potential sources          %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-dx=1;     % cell spacing (km)
+dx=10;     % cell spacing (km)
 dy=dx;    
-xmin = -5; xmax = 13;   % (km)
-ymin = -5; ymax = 10;   % (km)
+xmin = -50; xmax = 130;   % (km)
+ymin = -50; ymax = 100;   % (km)
+%xmin = -10; xmax = 20;
+%ymin = -10; ymax = 20;
 
 x_bp = xmin:dx:xmax;
 y_bp = ymin:dy:ymax;
@@ -94,8 +96,8 @@ DivPop = [0;size(USArray,1);size(EUArray,1);size(AUArray,1)];
 DivColor = ['k';'r';'b'];%'m','g'];%,'y']
           
 %% plot station map (Figure 1)
-figure(1);clf;
-set(gcf,'Position',[1 scrsz(4)*2/3 530 650]);
+h1=figure(1);clf;
+set(h1,'visible','off','Position',[1 scrsz(4)*2/3 530 650]);
 hold on;
 az0=linspace(0,2*pi,100);
 di = 0:95;
@@ -121,8 +123,8 @@ text(0.75e4,-0.8e4,'95^{o}','FontSize',14)
 set(gca,'FontSize',14)
 set(gca,'color','none')
 title('Station Distribution')
-saveas(gcf,[outdir,'StationMap'],'png')
-saveas(gcf,[outdir,'StationMap'],'fig')
+saveas(h1,[outdir,'StationMap'],'png')
+saveas(h1,[outdir,'StationMap'],'fig')
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %              Make Synthetic Seismograms                %
@@ -130,7 +132,7 @@ saveas(gcf,[outdir,'StationMap'],'fig')
 fc = 1;                  % dominant frequency (Hz)
 dt = 0.05;               % sampling
 nsmooth=round(1/fc/dt);  % smoothing for plotting (period / sampling)
-t=-5:dt:(max(t_ev)+3);   
+t=-5:dt:(max(t_ev)+10);   
 nt=length(t);
 
 % Moment Rate Function
@@ -192,8 +194,8 @@ end
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Plot waveform versus azimuth               %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-figure(2);clf
-set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 530 650]);
+h2=figure(2);clf
+%set(h2,'visible','off','Position',[scrsz(3)/4 scrsz(4)/2 530 650]);
 subplot(5,1,1:4);
 h=pcolor(t,th_st/pi,Data);
 ylim([0 2])
@@ -209,8 +211,8 @@ plot(t,event1);
 xlabel('time (s)');
 xlim([t(1) t(end)])
 set(gca,'FontSize',14)
-saveas(gcf,[outdir,'AzimuthalDistribution'],'png')
-saveas(gcf,[outdir,'AzimuthalDistribution'],'fig')
+saveas(h2,[outdir,'AzimuthalDistribution'],'png')
+saveas(h2,[outdir,'AzimuthalDistribution'],'fig')
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %        Filter and Convert to Frequency Domain          %
@@ -236,7 +238,10 @@ nftot = length(fspace0);      % number of frequencies
 %ffilt = find(fspace0 >= lowF & fspace0 <= highF);
 
 % Bin the frequencies
-ffilt = find(fspace0 >= 0.9 & fspace0 <=1.1);
+df = fspace0(2)-fspace0(1);
+fL = 1.00;
+fH = 1.10;
+ffilt = find(fspace0 >= fL & fspace0 <=fH);
 fspace = fspace0(ffilt);
 nf = length(fspace);
 nfbin = 1;
@@ -279,10 +284,16 @@ np = sum(DivPop);         % number of stations in inversion population
 ncomb = ns*nDiv;          % total number of model parameters
 
 % Sparsity parameter
-Orders = [-3;-2;-1;0;1;2];
-Lambdas = 10.^(Orders);
-nLam = Lambdas;
-return
+Orders = [-2;-1;0;1;2];
+factors = [1;5];
+Lambdas = zeros(length(Orders)*length(factors),1);
+for i1 = 1:length(Orders)
+    for i2 = 1:length(factors)
+        Lambdas((i1-1)*length(factors)+i2) = factors(i2)*10^(Orders(i1));
+    end
+end
+nLam = length(Lambdas);
+
 % Output models
 %moutTemp = zeros(nfbin,ncomb*binpop);
 moutTemp = zeros(nLam,ncomb*binpop);
@@ -303,6 +314,8 @@ specPower = zeros(nDiv,ns);
 %specPowerF = zeros(nfbin,nDiv,ns);
 specPowerF = zeros(nLam,nDiv,ns);
 
+cvx_solver_settings('cvx_slvitr',2);
+%cvx_solver_settings -clear
 tic
 parfor f = 1:nLam       % parallelized over frequency
     
@@ -418,9 +431,9 @@ end
 % end
 
 ErrorFile = fopen([outdir,'ModelErrorInfo.txt'],'w');
-fprintf(ErrorFile,'%.2f - %.2f Hz\n',0.9,1.1);
+fprintf(ErrorFile,'%.2f - %.2f Hz\n',fL,fH);
 for f = 1:nLam
-    fprintf(ErrorFile,'%.2f  %.2f \n',Lambdas(f),ErrorLamBin(f));
+    fprintf(ErrorFile,'%.3f  %.2f \n',Lambdas(f),ErrorLamBin(f));
 end
 fclose(ErrorFile);
 
@@ -428,19 +441,18 @@ fclose(ErrorFile);
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %          Plot Spectral Power           %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
+set(0,'DefaultFigureVisible','off');
+h4=figure(4);clf;
+set(h4,'visible','off');
+qy = min(3,nDiv+1);
+if qy < 3
+    qx = 1;
+else
+    qx = ceil((nDiv+1)/3);
+end
+set(h4,'Position',[1 1 qy*425 qx*280],'visible','off');
 for f = 1:nLam
-    findices = ((f-1)*binpop+1):(f*binpop);
-    f_floor = fspace(findices(1));
-    f_ceil  = fspace(findices(end));
-    figure(4);clf;
     hold on;
-    qy = min(3,nDiv+1);
-    if qy < 3
-        qx = 1;
-    else
-        qx = ceil((nDiv+1)/3);
-    end
-    set(gcf,'Position',[1 1 qy*425 qx*280])
     for i = 1:nDiv
        subplot(qx,qy,i)
        grid = reshape(squeeze(specPowerF(f,i,:)),nybp,nxbp);
@@ -453,17 +465,22 @@ for f = 1:nLam
     grid = reshape(sum(squeeze(specPowerF(f,:,:)),1),nybp,nxbp);
     pcolor(x_bp-dx/2,y_bp-dy/2,grid)
     colorbar
-    title(sprintf('Combined Power: %.2f - %.2f Hz, \lambda = %.2f',0.9,1.1,Lambdas(f)))
+    title(sprintf('Combined Power: %.2f - %.2f Hz, Lambda = %.3f',fL,fH,Lambdas(f)))
     axis equal tight
-    saveas(gcf,[outdir,sprintf('SubeventLocation_Lambda_%d',f)],'png')
-    saveas(gcf,[outdir,sprintf('SubeventLocation_Lambda_%d',f)],'fig') 
-    
+    saveas(h4,[outdir,sprintf('SubeventLocation_Lambda_%d',f)],'png')
+    saveas(h4,[outdir,sprintf('SubeventLocation_Lambda_%d',f)],'fig') 
+    hold off
 end
+
+
+h2=figure(2);clf
+set(h2,'visible','off','Position',[scrsz(3)/4 scrsz(4)/2 530 650]);
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %     Plot Data and Synthetic Spectra and Waveforms      %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-
+h6=figure(6);clf;
+set(h6,'visible','off','Position',[1 1 1140 nDiv*190]);
 iSyn = zeros(size(Data));
 for la = 1:nLam
     for i = 1:nsta
@@ -475,8 +492,6 @@ for la = 1:nLam
         DataI(i,:) = real(ifft(DataSpec(i,:),ntw));
     end
 
-    figure(6);clf;
-    set(gcf,'Position',[1 1 1140 nDiv*190])
     for i = 1:nDiv
         popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
 
@@ -496,7 +511,7 @@ for la = 1:nLam
         ylabel(sprintf('Subarray %d',i))
         subplot(nDiv,4,(i-1)*4+3)
         plot(fspace,real(squeeze(SynLam(la,Div(popu),:))));   
-        title(sprintf('Inverted u (\omega), \lambda = %.2f',Lambdas(la)));
+        title(['Inverted u (\omega), \lambda = ',sprintf('%.3f',Lambdas(la))]);
 
         % Synthetic time series u(t)
         subplot(nDiv,4,(i-1)*4+4)
@@ -504,8 +519,8 @@ for la = 1:nLam
         title('Inverted u (t)')
         xlim([t(tw) t(end)])
     end
-    saveas(gcf,[outdir,sprintf('Waveforms_Lam%d',la)],'png');
-    saveas(gcf,[outdir,sprintf('Waveforms_Lam%d',la)],'fig');
+    saveas(h6,[outdir,sprintf('Waveforms_Lam%d',la)],'png');
+    saveas(h6,[outdir,sprintf('Waveforms_Lam%d',la)],'fig');
 end
 
 
