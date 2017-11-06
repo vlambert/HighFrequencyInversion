@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'MultiArray/diffG_0_9_1_LamSearch_nonSt_lim2';
+outdir = 'MultiArray/diffG_0_9_1_LamSearch_repeater/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -25,8 +25,8 @@ EVLO=153.281;
 EVDP=607;
 
 %subevent locations and times
-x_ev=[0 5 10 50 60 80    100];
-y_ev=[0 15 40 50 54 60    70];
+x_ev=[0 0 10 50 51 80    100];
+y_ev=[0 0 40 50 51 60    70];
 t_ev=[0 5 14 19 25 31   38 ];
 m_ev=[1 1 1 1 1 1  1];
 n_ev=length(x_ev);

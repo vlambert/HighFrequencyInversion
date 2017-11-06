@@ -1,5 +1,6 @@
 function  MakeFrame(tmp,tmp2,x_bp,y_bp,dx,dy,t,x_ev,y_ev,frameDir,outdir,ii,nt)
     h1 = figure('Visible','Off');clf
+    %set(gcf,'renderer','Painters')
     set(gcf,'Position',[1 1 996 384]);
     set(gcf,'color','w');
     subplot(3,2,[1 3 5]);
@@ -45,6 +46,7 @@ function  MakeFrame(tmp,tmp2,x_bp,y_bp,dx,dy,t,x_ev,y_ev,frameDir,outdir,ii,nt)
     saveas(gcf,[frameDir,sprintf('Frames_%d', ii)],'png')
     if ii == (nt+1)
         saveas(gcf,[outdir,'FinalBeam'],'png')
+        saveas(gcf,[outdir,'FinalBeam'],'epsc')
     end
 
 end

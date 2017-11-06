@@ -11,7 +11,7 @@ close all;
 tic;
 addpath('../');
 scrsz=get(0,'ScreenSize');
-outdir = 'WorldArray/3array_AUincoh';
+outdir = 'WorldArray/3array_noise_moresubs/';
 frameDir = 'Frames/';
 movieDir = 'movies/';
 if ~exist(outdir,'dir')
@@ -32,10 +32,10 @@ EVLO=153.281;
 EVDP=607;
 
 %subevent locations and times
-x_ev=[0 1 8    10];% 20 25 ]./2; % km
-y_ev=[0 4 6    7];% 10 10 ]./2; % km
-t_ev=[0 3  7   9 ];%10 12];     % seconds
-m_ev=[1 1  1   1];%  1  1];     % moment normalized to event 1
+x_ev=[0 5 10 50 60  80    100];% 20 25 ]./2; % km
+y_ev=[0 15 40 50 54 60    70];% 10 10 ]./2; % km
+t_ev=[0 5 14 19 25 31   38 ];%10 12];     % seconds
+m_ev=[1 1  1   1 1 1 1];%  1  1];     % moment normalized to event 1
 n_ev=length(x_ev);
 
 % convert km to deg
@@ -46,10 +46,10 @@ lat_ev = EVLA+y_ev/deg2km;
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %        Construct 2D grid of potential sources          %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-dx=1;     % cell spacing (km)
+dx=10;     % cell spacing (km)
 dy=dx;    
-xmin = -5; xmax = 13;   % (km)
-ymin = -5; ymax = 10;   % (km)
+xmin = -50; xmax = 130;   % (km)
+ymin = -50; ymax = 100;   % (km)
 
 x_bp = xmin:dx:xmax;
 y_bp = ymin:dy:ymax;
@@ -133,7 +133,7 @@ saveas(gcf,[outdir,'StationMap'],'png')
 fc = 2;                  % dominant frequency (Hz)
 dt = 0.05;               % sampling
 nsmooth=round(1/fc/dt);  % smoothing for plotting (period / sampling)
-t=-5:dt:(max(t_ev)+3);   
+t=-5:dt:(max(t_ev)+10);   
 nt=length(t);
 
 % Moment Rate Function
@@ -151,9 +151,13 @@ multiple(:,1) = 1;    % number of multiples
 multiple(:,2) = 2;    % time delay for each multiple
 multiple(:,3) = 1;    % damping factor
 
-multiple(Div3,1) = 2;    % number of multiples
-multiple(Div3,2) = 0.5;  % time delay for each multiple
-multiple(Div3,3) = 1;    % damping factor
+multiple(Div2,1) = 2;    % number of multiples
+multiple(Div2,2) = 0.5;  % time delay for each multiple
+multiple(Div2,3) = 1.5;    % damping factor
+
+multiple(Div3,1) = 3;    % number of multiples
+multiple(Div3,2) = 0.6;  % time delay for each multiple
+multiple(Div3,3) = 1.5;    % damping factor
 
 % Make synthetics wrt first arrival
 Data=zeros(nsta, nt);
@@ -161,6 +165,11 @@ Data=zeros(nsta, nt);
 % Distance and travel time from hypocenter to each station 
 dist = sqrt( ( x_ev(1) - x_st ).^2 + ( y_ev(1) - y_st ).^2 )/111.2; 
 t0j = t_ev(1)+interp1(P_trav(:,1),P_trav(:,2),dist,'linear','extrap'); 
+SNR = 30;
+w = zeros(nsta,1);
+w(:,1) = 1/DivPop(2);
+w(Div2,1) = 1/DivPop(3);
+w(Div3,1) = 1/DivPop(4);
 
 for jj=1:nsta
     for ii=1:n_ev
@@ -171,10 +180,11 @@ for jj=1:nsta
         Data(jj,:) = Data(jj,:) + m_ev(ii)*GreensFunctions(t,trav,0,fc,multiple(jj,1),multiple(jj,2),multiple(jj,3));
     end
     Data(jj,:)=Data(jj,:)*AZweight(jj);
+    Data(jj,:) = awgn(Data(jj,:),SNR);
 end
 
 
-w=ones(nsta,1);
+%w=ones(nsta,1);
 w=w./sum(w);
 w2=w*ones(1,nt);
 %% Plotting data for each station
@@ -244,12 +254,13 @@ for ii=1:nxbp
 %         end
     end
 end
-
+%%
 BP = BP./max(max(max(BP)));
 BPs = BPs./max(max(max(BPs)));
 toc;
 BP(:,:,end+1)=max(BP,[],3);
 BPs(:,:,end+1)=max(BPs,[],3);
+
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                   Track peak beam power                %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
@@ -292,13 +303,13 @@ delete([frameDir,'Frames*.png']);
 %mov(1:nt+1)=struct('cdata',[],'colormap',[]);
 %set(gca,'nextplot','replacechildren');
 %set(gcf,'color','w');
-parfor ii=1:(nt+1)
+for ii=1:(nt+1)
     tmp=squeeze(BP(:,:,ii));
     tmp2=squeeze(BPs(:,:,ii));
     MakeFrame(tmp,tmp2,x_bp,y_bp,dx,dy,t,x_ev,y_ev,frameDir,outdir,ii,nt)
 end
 
-
+return
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                      Make Movie                        %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
