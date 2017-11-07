@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'MultiArray/diffG_0_9_1_LamSearch_repeater/';
+outdir = 'MultiArray/diffG_0_9_1_LamSearch_repeater_disjoint/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -25,9 +25,11 @@ EVLO=153.281;
 EVDP=607;
 
 %subevent locations and times
-x_ev=[0 0 10 50 51 80    100];
-y_ev=[0 0 40 50 51 60    70];
-t_ev=[0 5 14 19 25 31   38 ];
+% x_ev=[0 0 10 50 51 80    100];
+% y_ev=[0 0 40 50 51 60    70];
+x_ev=[0 10 50 80 100 0 51];
+y_ev=[0 40 50 60 70 1 50];
+t_ev=[0 5 14 19 25 15   30 ];
 m_ev=[1 1 1 1 1 1  1];
 n_ev=length(x_ev);
 
@@ -636,6 +638,15 @@ end
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                       Save Info                        %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
+info.x_ev = x_ev;
+info.y_ev = y_ev;
+info.t_ev = t_ev;
+info.m_ev = m_ev;
+info.x = x_bp;
+info.y = y_bp;
+info.nx = nxbp;
+info.ny = nybp;
+info.ns = ns;
 info.lowF = lowF;
 info.highF = highF;
 info.binpop = binpop;
