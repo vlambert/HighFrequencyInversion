@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'MultiArray/diffG_0_9_1_LamSearch_repeater_disjoint/';
+outdir = 'MultiArray/diffG_0_9_1_LamSearch_repeater_disjoint_2Hz/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -241,8 +241,8 @@ nftot = length(fspace0);      % number of frequencies
 
 % Bin the frequencies
 df = fspace0(2)-fspace0(1);
-fL = 1.00;
-fH = 1.10;
+fL = 1.90;
+fH = 2.00;
 ffilt = find(fspace0 >= fL & fspace0 <=fH);
 fspace = fspace0(ffilt);
 nf = length(fspace);
