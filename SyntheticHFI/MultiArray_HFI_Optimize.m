@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'MultiArray/diffG_0_9_1_LamSearch_repeater_disjoint_2Hz/';
+outdir = 'MultiArray/diffG_multiF_LamSearch_repeater_disjoint/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -241,23 +241,23 @@ nftot = length(fspace0);      % number of frequencies
 
 % Bin the frequencies
 df = fspace0(2)-fspace0(1);
-fL = 1.90;
+fL = 1.00;
 fH = 2.00;
 ffilt = find(fspace0 >= fL & fspace0 <=fH);
 fspace = fspace0(ffilt);
 nf = length(fspace);
-nfbin = 1;
-binpop = nf;
+%nfbin = 10;
+%binpop = nf;
 
 
-% binpop = 10;
-% overflow = binpop - mod(length(ffilt),binpop);
-% if overflow ~= 0
-%    ffilt = ffilt(1):(ffilt(end)+overflow); 
-% end
-% fspace = fspace0(ffilt);
-% nf = length(fspace); % number of frequencies
-% nfbin = nf/binpop;
+binpop = 10;
+overflow = binpop - mod(length(ffilt),binpop);
+if overflow ~= 0
+   ffilt = ffilt(1):(ffilt(end)+overflow); 
+end
+fspace = fspace0(ffilt);
+nf = length(fspace); % number of frequencies
+nfbin = nf/binpop;
 
 DataSpec = zeros(nsta,nf);
 for i = 1:nsta
@@ -273,7 +273,7 @@ for i = 1:nDiv
     gwtemp = gw(1:nfft/2+1);
     GFw(i,:) = gwtemp(ffilt);
 end
-
+return
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Prepare and Perform Inversion              %
 %              for each Discrete Frequency               %
@@ -319,7 +319,7 @@ specPowerF = zeros(nLam,nDiv,ns);
 cvx_solver_settings('cvx_slvitr',2);
 %cvx_solver_settings -clear
 tic
-parfor f = 1:nLam       % parallelized over frequency
+for f = 1:nLam       % parallelized over frequency
     
     %findices = ((f-1)*binpop+1):(f*binpop);
     %f0s = fspace(findices); % frequency
