@@ -317,8 +317,6 @@ for fbin = 1:nfbin
 
         findices = ((fbin-1)*binpop+1):(fbin*binpop);
         f0s = fspace(findices); % frequency
-        fLi = min(f0s);
-        fHi = max(f0s);
         %findices = (1:nf);
         %f0s = fspace;
 
@@ -389,7 +387,10 @@ toc
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
     ErrorLamBin = zeros(nLam,1);
     SynLam = zeros(nLam,np,nf);
-    findices = (1:nf);
+    findices = ((fbin-1)*binpop+1):(fbin*binpop);
+    f0s = fspace(findices);
+    fLi = min(f0s);
+    fHi = max(f0s);
     for la = 1:nLam
         for fi = 1:binpop
             findex = fi;
@@ -438,5 +439,5 @@ toc
     info.nDiv = nDiv;
     info.Div = Div;
     info.DivPop = DivPop;
-    save([outdir,sprintf('InversionOutput_d.mat',fbin)],'DataSpec','syntmp','specPowerF','mm','GF','Lambdas','fspace','info','-v7.3');
+    save([outdir,sprintf('InversionOutput_%d.mat',fbin)],'DataSpec','syntmp','specPowerF','mm','GF','Lambdas','fspace','info','-v7.3');
 end
