@@ -27,10 +27,10 @@ EVDP=607;
 %subevent locations and times
 % x_ev=[0 0 10 50 51 80    100];
 % y_ev=[0 0 40 50 51 60    70];
-x_ev=[0 10 50 80 100 0 51];
-y_ev=[0 40 50 60 70 1 50];
-t_ev=[0 5 14 19 25 15   30 ];
-m_ev=[1 1 1 1 1 1  1];
+x_ev=[0 5];%10 50 80 100 0 51];
+y_ev=[0 5];%40 50 60 70 1 50];
+t_ev=[0 5];%5 14 19 25 15   30 ];
+m_ev=[1 1];%1 1 1 1 1  1];
 n_ev=length(x_ev);
 
 % convert km to deg
@@ -44,10 +44,10 @@ lat_ev = EVLA+y_ev/deg2km;
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 dx=10;     % cell spacing (km)
 dy=dx;    
-xmin = -50; xmax = 130;   % (km)
-ymin = -50; ymax = 100;   % (km)
-%xmin = -10; xmax = 20;
-%ymin = -10; ymax = 20;
+%xmin = -50; xmax = 130;   % (km)
+%ymin = -50; ymax = 100;   % (km)
+xmin = -10; xmax = 20;
+ymin = -10; ymax = 20;
 
 x_bp = xmin:dx:xmax;
 y_bp = ymin:dy:ymax;
