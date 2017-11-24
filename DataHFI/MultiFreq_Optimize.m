@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Gorka_1/';
+outdir = 'Okhotsk_1/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -40,7 +40,7 @@ end
 deg2km = 111.2;
 
 % US
-US=load('NepalData_US41.mat');
+US=load('OkhotskData_US280.mat');
 EVLO = US.info.EVLO;
 EVLA = US.info.EVLA;
 EVDP = US.info.EVDP;
@@ -50,12 +50,12 @@ USArray = [US.StaLat, US.StaLon];
 USData = US.Data_pass;
 
 % EU Array
-EU=load('NepalData_EU87.mat');
+EU=load('OkhotskData_EU137.mat');
 EUArray = [EU.StaLat, EU.StaLon];
 EUData = EU.Data_pass;
 
 % AU
-AU=load('NepalData_AU26.mat');
+AU=load('OkhotskData_AU35.mat');
 AUArray = [AU.StaLat, AU.StaLon];
 AUData = AU.Data_pass;
 
@@ -140,7 +140,7 @@ t=tspan;
 nt=length(t);
 
 % Load travel times
-P_trav = load('P_trav_8_taup.txt');    % TauP with IASP91 velocity model
+P_trav = load('P_trav_607_taup.txt');    % TauP with IASP91 velocity model
 
 % Window function
 W = tukeywin(nt,0.2); % 0.5, 0.75, 1
