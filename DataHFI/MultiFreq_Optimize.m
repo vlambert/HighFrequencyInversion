@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Okhotsk_1/';
+outdir = 'Okhotsk_2/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -84,15 +84,21 @@ DivColor = ['k';'r';'b'];%'m','g'];%,'y']
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %        Construct 2D grid of potential sources          %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-dx=10;     % cell spacing (km)
-dy=dx;    
-xmin = -50; xmax = 130;   % (km)
-ymin = -50; ymax = 100;   % (km)
+%dx=10;     % cell spacing (km)
+%dy=dx;    
+%xmin = -50; xmax = 130;   % (km)
+%ymin = -50; ymax = 100;   % (km)
 %xmin = -10; xmax = 20;
 %ymin = -10; ymax = 20;
 
-x_bp = xmin:dx:xmax;
-y_bp = ymin:dy:ymax;
+dx = 0.1;
+dy = dx;
+xmin = -3; xmax = 3;
+ymin = -4; ymax = 2;
+
+
+x_bp = (xmin:dx:xmax)*deg2km;
+y_bp = (ymin:dy:ymax)*deg2km;
 nxbp = length(x_bp);
 nybp = length(y_bp);
 
@@ -206,8 +212,8 @@ nftot = length(fspace0);      % number of frequencies
 
 % Bin the frequencies
 df = fspace0(2)-fspace0(1);
-fL = 1.80;
-fH = 1.90;
+fL = 0.20;
+fH = 2.00;
 ffilt = find(fspace0 >= fL & fspace0 <=fH);
 fspace = fspace0(ffilt);
 nf = length(fspace);
