@@ -46,24 +46,24 @@ EVLA = US.info.EVLA;
 EVDP = US.info.EVDP;
 dt = US.info.dt;
 tspan = US.info.tspan;
-USArray = [US.StaLat, US.StaLon];
+USArray = [US.stap.Lat, US.stap.Lon];
 USData = US.Data_pass;
 
 % EU Array
 EU=load('OkhotskData_EU137.mat');
-EUArray = [EU.StaLat, EU.StaLon];
+EUArray = [EU.stap.Lat, EU.stap.Lon];
 EUData = EU.Data_pass;
 
 % AU
 AU=load('OkhotskData_AU35.mat');
-AUArray = [AU.StaLat, AU.StaLon];
+AUArray = [AU.stap.Lat, AU.stap.Lon];
 AUData = AU.Data_pass;
 
 StaLoc = [USArray;EUArray;AUArray];
 Data = [USData;EUData;AUData];
-R = [US.rr;EU.rr;AU.rr];
-az =[US.az;EU.az;AU.az];
-tt =[US.tt;EU.tt;AU.tt];
+R = [US.stap.rr;EU.stap.rr;AU.stap.rr];
+az =[US.stap.az;EU.stap.az;AU.stap.az];
+tt =[US.stap.tt;EU.stap.tt;AU.stap.tt];
 
 az = az/180*pi;
 th_st = az;
