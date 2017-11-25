@@ -91,10 +91,10 @@ DivColor = ['k';'r';'b'];%'m','g'];%,'y']
 %xmin = -10; xmax = 20;
 %ymin = -10; ymax = 20;
 
-dx = 0.1;
+dx = 0.1; % lat and lon
 dy = dx;
-xmin = -3; xmax = 3;
-ymin = -4; ymax = 2;
+xmin = -1; xmax = 1;
+ymin = -1; ymax = 1;
 
 
 x_bp = (xmin:dx:xmax)*deg2km;
@@ -212,8 +212,8 @@ nftot = length(fspace0);      % number of frequencies
 
 % Bin the frequencies
 df = fspace0(2)-fspace0(1);
-fL = 0.20;
-fH = 2.00;
+fL = 0.2;
+fH = 2.0;
 ffilt = find(fspace0 >= fL & fspace0 <=fH);
 fspace = fspace0(ffilt);
 nf = length(fspace);
@@ -400,3 +400,5 @@ toc
     info.DivPop = DivPop;
     save([outdir,sprintf('InversionOutput_%d.mat',fbin)],'DataSpec','syntmp','specPowerF','mm','Lambdas','fspace','info','-v7.3');
 end
+poolobj = gcp('nocreate');
+delete(poolobj);
