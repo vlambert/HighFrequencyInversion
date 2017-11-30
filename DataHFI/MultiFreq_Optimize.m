@@ -47,7 +47,7 @@ EVLO = US.info.EVLO;
 EVLA = US.info.EVLA;
 EVDP = US.info.EVDP;
 dt = US.info.dt;
-tspan = US.info.tspan;
+tspan = US.info.tspan(1:end-1);
 USArray = [US.sta.Lat_i, US.sta.Lon_i];
 USData = US.finalUData;
 USXCF = US.corr.XCFullu;
@@ -275,7 +275,7 @@ for i1 = 1:length(Orders)
 end
 nLam = length(Lambdas);
 
-%cvx_solver_settings('cvx_slvitr',2);
+cvx_solver_settings('cvx_slvitr',2);
 %cvx_solver_settings -clear
 tic
 for fbin = 1:nfbin
