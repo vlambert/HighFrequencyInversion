@@ -83,8 +83,9 @@ R = [US.sta.rr_i(passUS); EU.sta.rr_i(passEU); AU.sta.rr_i(passAU)];
 az =[US.sta.az_i(passUS); EU.sta.az_i(passEU); AU.sta.az_i(passAU)];
 tt =[US.sta.tt_i(passUS); EU.sta.tt_i(passEU); AU.sta.tt_i(passAU)];
 
+clear -regexp ^US ^AU ^EU ^pass
+return
 az = az/180*pi;
-th_st = az;
 R = deg2km*R;
 x_st = R.*sin(az);
 y_st = R.*cos(az);
@@ -111,8 +112,8 @@ DivColor = ['k';'r';'b'];%'m','g'];%,'y']
 
 dx = 0.1; % lat and lon
 dy = dx;
-xmin = -1; xmax = 1;
-ymin = -1; ymax = 1;
+xmin = -0.1; xmax = 0.1;
+ymin = -0.1; ymax = 0.1;
 
 
 x_bp = (xmin:dx:xmax)*deg2km;
@@ -186,8 +187,8 @@ for i = 1:nDiv
     popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
     set(h2,'visible','off','Position',[97 304 1096 394]);
     subplot(4,nDiv,i:nDiv:3*nDiv);
-    h=pcolor(t,th_st(Div(popu))/pi,Data(Div(popu),:));
-    ylim([min(th_st(Div(popu))/pi) max(th_st(Div(popu))/pi)])
+    h=pcolor(t,az(Div(popu))/pi,Data(Div(popu),:));
+    ylim([min(az(Div(popu))/pi) max(az(Div(popu))/pi)])
     set(h,'EdgeColor','none');
     ylabel('station azimuth \theta (\pi)')
     set(gca,'FontSize',14)
@@ -295,6 +296,7 @@ for fbin = 1:nfbin
     % Spectral Power for each source
     specPower = zeros(nDiv,ns);
     specPowerF = zeros(nLam,nDiv,ns);
+   
     parfor f = 1:nLam       % parallelized over frequency
 
         findices = ((fbin-1)*binpop+1):(fbin*binpop);
@@ -309,7 +311,6 @@ for fbin = 1:nfbin
         % Create kernels for each source location and station
         K1 = zeros(np,ns);
         Kf = zeros(np,ncomb);
-
 
         for d = 1:nDiv
             % find the station indices within the subarray
@@ -328,7 +329,7 @@ for fbin = 1:nfbin
                 end
             end
         end
-
+        
         % Perform the Inversion
         lambda = Lambdas(f);                         % Sparsity prior weight
         pl = sqrt(nDiv)*ones(1,ns);        
