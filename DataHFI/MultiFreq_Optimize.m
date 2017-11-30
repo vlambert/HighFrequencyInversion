@@ -218,7 +218,7 @@ ffilt = find(fspace0 >= fL & fspace0 <=fH);
 fspace = fspace0(ffilt);
 nf = length(fspace);
 
-binpop = 10;
+binpop = 20;
 overflow = binpop - mod(length(ffilt),binpop);
 if overflow ~= 0
    ffilt = ffilt(1):(ffilt(end)+overflow); 
@@ -257,7 +257,7 @@ for i1 = 1:length(Orders)
 end
 nLam = length(Lambdas);
 
-cvx_solver_settings('cvx_slvitr',2);
+%cvx_solver_settings('cvx_slvitr',2);
 %cvx_solver_settings -clear
 tic
 for fbin = 1:nfbin
@@ -384,6 +384,9 @@ toc
     %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
     %                       Save Info                        %
     % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
+    info.EVLA = EVLA;
+    info.EVLO = EVLO;
+    info.EVDP = EVDP;
     info.x = x_bp;
     info.y = y_bp;
     info.nx = nxbp;
