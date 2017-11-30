@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Okhotsk_2/';
+outdir = 'Okhotsk_3u/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -39,31 +39,49 @@ end
 % % % % % % % % % % % % % % % % % % % % % % % % % %%
 deg2km = 111.2;
 
+corrCrit = 0.7;
+
 % US
-US=load('OkhotskData_US280.mat');
+US=load('OkhotskData_US.mat');
 EVLO = US.info.EVLO;
 EVLA = US.info.EVLA;
 EVDP = US.info.EVDP;
 dt = US.info.dt;
 tspan = US.info.tspan;
-USArray = [US.stap.Lat, US.stap.Lon];
-USData = US.Data_pass;
+USArray = [US.sta.Lat_i, US.sta.Lon_i];
+USData = US.finalUData;
+USXCF = US.corr.XCFullu;
+USXCW = US.corr.XCu;
+passUS = find(USXCW >= corrCrit);
+USData = USData(passUS,:);
+USArray = USArray(passUS,:);
+
 
 % EU Array
-EU=load('OkhotskData_EU137.mat');
-EUArray = [EU.stap.Lat, EU.stap.Lon];
-EUData = EU.Data_pass;
+EU=load('OkhotskData_EU.mat');
+EUArray = [EU.sta.Lat_i, EU.sta.Lon_i];
+EUData = EU.finalUData;
+EUXCF = EU.corr.XCFullu;
+EUXCW = EU.corr.XCu;
+passEU = find(EUXCW >= corrCrit);
+EUData = EUData(passEU,:);
+EUArray = EUArray(passEU,:);
 
 % AU
-AU=load('OkhotskData_AU35.mat');
-AUArray = [AU.stap.Lat, AU.stap.Lon];
-AUData = AU.Data_pass;
+AU=load('OkhotskData_AU.mat');
+AUArray = [AU.sta.Lat_i, AU.sta.Lon_i];
+AUData = AU.finalUData;
+AUXCF = AU.corr.XCFullu;
+AUXCW = AU.corr.XCu;
+passAU = find(AUXCW >= corrCrit);
+AUData = USData(passAU,:);
+AUArray = USArray(passAU,:);
 
 StaLoc = [USArray;EUArray;AUArray];
 Data = [USData;EUData;AUData];
-R = [US.stap.rr;EU.stap.rr;AU.stap.rr];
-az =[US.stap.az;EU.stap.az;AU.stap.az];
-tt =[US.stap.tt;EU.stap.tt;AU.stap.tt];
+R = [US.sta.rr_i(passUS); EU.sta.rr_i(passEU); AU.sta.rr_i(passAU)];
+az =[US.sta.az_i(passUS); EU.sta.az_i(passEU); AU.sta.az_i(passAU)];
+tt =[US.sta.tt_i(passUS); EU.sta.tt_i(passEU); AU.sta.tt_i(passAU)];
 
 az = az/180*pi;
 th_st = az;
@@ -212,8 +230,8 @@ nftot = length(fspace0);      % number of frequencies
 
 % Bin the frequencies
 df = fspace0(2)-fspace0(1);
-fL = 0.2;
-fH = 2.0;
+fL = 0.5;
+fH = 1.5;
 ffilt = find(fspace0 >= fL & fspace0 <=fH);
 fspace = fspace0(ffilt);
 nf = length(fspace);

@@ -74,6 +74,6 @@ for st=1:nsta_pass
    Data_pre = Data_pass(st,:);
    Time_pass(st,:) = Time_pre + lags(sta_ind);
    Data_pass(st,:)= interp1(Time_pre,Data_pre,Time_pass(st,:),'linear',0); 
-   Data_pass(st,:) = Data_pass(st,:)./max(abs(Data_pass(st,:)))*sign(corrcoeff(sta_ind));
+   Data_pass(st,:) = Data_pass(st,:)./max(abs(Data_pass(st,:)));%*sign(corrcoeff(sta_ind));
 end
 end
