@@ -10,7 +10,7 @@
 
 clear all;
 close all;
-
+tic
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
@@ -42,40 +42,35 @@ deg2km = 111.2;
 corrCrit = 0.7;
 
 % US
-US=load('OkhotskData_US.mat');
+US=load('OkhotskData2_US.mat');
 EVLO = US.info.EVLO;
 EVLA = US.info.EVLA;
 EVDP = US.info.EVDP;
 dt = US.info.dt;
-tspan = US.info.tspan(1:end-1);
-USArray = [US.sta.Lat_i, US.sta.Lon_i];
-USData = US.finalUData;
+t = US.info.tspan(1:end-1);
 USXCF = US.corr.XCFullu;
 USXCW = US.corr.XCu;
 passUS = find(USXCW >= corrCrit);
-USData = USData(passUS,:);
-USArray = USArray(passUS,:);
+USData = US.finalUData(passUS,:);
+USArray = [US.sta.Lat_i(passUS,:), US.sta.Lon_i(passUS,:)];
+
 
 
 % EU Array
-EU=load('OkhotskData_EU.mat');
-EUArray = [EU.sta.Lat_i, EU.sta.Lon_i];
-EUData = EU.finalUData;
+EU=load('OkhotskData2_EU.mat');
 EUXCF = EU.corr.XCFullu;
 EUXCW = EU.corr.XCu;
 passEU = find(EUXCW >= corrCrit);
-EUData = EUData(passEU,:);
-EUArray = EUArray(passEU,:);
+EUData = EU.finalUData(passEU,:);
+EUArray = [EU.sta.Lat_i(passEU,:), EU.sta.Lon_i(passEU,:)];
 
 % AU
-AU=load('OkhotskData_AU.mat');
-AUArray = [AU.sta.Lat_i, AU.sta.Lon_i];
-AUData = AU.finalUData;
+AU=load('OkhotskData2_AU.mat');
 AUXCF = AU.corr.XCFullu;
 AUXCW = AU.corr.XCu;
 passAU = find(AUXCW >= corrCrit);
-AUData = USData(passAU,:);
-AUArray = USArray(passAU,:);
+AUData = AU.finalUData(passAU,:);
+AUArray = [AU.sta.Lat_i(passAU,:), AU.sta.Lon_i(passAU,:)];
 
 StaLoc = [USArray;EUArray;AUArray];
 Data = [USData;EUData;AUData];
@@ -83,8 +78,6 @@ R = [US.sta.rr_i(passUS); EU.sta.rr_i(passEU); AU.sta.rr_i(passAU)];
 az =[US.sta.az_i(passUS); EU.sta.az_i(passEU); AU.sta.az_i(passAU)];
 tt =[US.sta.tt_i(passUS); EU.sta.tt_i(passEU); AU.sta.tt_i(passAU)];
 
-clear -regexp ^US ^AU ^EU ^pass
-return
 az = az/180*pi;
 R = deg2km*R;
 x_st = R.*sin(az);
@@ -94,11 +87,10 @@ nDiv = 3;
 nsta = size(StaLoc,1);
 
 % Set up coherent array divisions
-Div = (1:nsta)';
 DivPop = [0;size(USArray,1);size(EUArray,1);size(AUArray,1)];
 
 DivColor = ['k';'r';'b'];%'m','g'];%,'y']
-
+clear -regexp ^US ^AU ^EU ^pass
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %        Construct 2D grid of potential sources          %
@@ -134,20 +126,13 @@ az0=linspace(0,2*pi,100);
 di = 0:95;
 plot(EVLO+25*sin(az0),EVLA+25*cos(az0),'-k');
 plot(EVLO+95*sin(az0),EVLA+95*cos(az0),'-r');
-%plot(EVLO+di*sin(minA1),EVLA+di*cos(minA1),'.k');
-% plot(EVLO+di*sin(minA2),EVLA+di*cos(minA2),'.r');
-% plot(EVLO+di*sin(minA3),EVLA+di*cos(minA3),'.b');
-% plot(EVLO+di*sin(minA4),EVLA+di*cos(minA4),'.m');
-% plot(EVLO+di*sin(minA5),EVLA+di*cos(minA5),'.g');
 
 for d=1:nDiv
     popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
-    plot(EVLO+x_st(Div(popu))/deg2km,EVLA+y_st(Div(popu))/deg2km,'k^','MarkerEdgeColor',DivColor(d),...
+    plot(EVLO+x_st(popu)/deg2km,EVLA+y_st(popu)/deg2km,'k^','MarkerEdgeColor',DivColor(d),...
         'MarkerFaceColor','w');
 end
 plot(EVLO,EVLA,'rp');
-% xlabel('Longitude')
-% ylabel('Latitude')
 axis equal; box on;
 text(EVLO+0.15e4,EVLA+-0.1e4,'25^{o}','FontSize',14)
 text(EVLO+0.75e4,EVLA+-0.8e4,'95^{o}','FontSize',14)
@@ -160,8 +145,7 @@ saveas(h1,[outdir,'StationMap'],'fig')
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                        Set Up Data                     %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-nsmooth=10;  % smoothing for plotting (period / sampling)
-t=tspan;   
+nsmooth=10;  % smoothing for plotting (period / sampling)   
 nt=length(t);
 
 % Load travel times
@@ -173,12 +157,27 @@ W = W./max(W);
 
 % Distance and travel time from hypocenter to each station 
 dist = R/deg2km; 
-t0j =  tt;
+t0j1 =  tt;
 
 for jj=1:nsta
     Data(jj,:)=W'.*Data(jj,:)./max(abs(Data(jj,:)));
 end
 
+tij = zeros(ns,nsta);
+
+for d = 1:nDiv
+    % find the station indices within the subarray
+    popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
+    for i = 1:ns 
+        x_xi = xycenters(i,1);
+        y_xi = xycenters(i,2);
+        % Calculate travel time from each potential source
+        dis = sqrt( ( x_xi-x_st(popu) ).^2 + ( y_xi-y_st(popu) ).^2 )/111.2;
+        tij(i,popu) =interp1(P_trav(:,1),P_trav(:,2),dis,'linear','extrap');
+    end
+end
+
+clear W
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Plot waveform versus azimuth               %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
@@ -187,15 +186,15 @@ for i = 1:nDiv
     popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
     set(h2,'visible','off','Position',[97 304 1096 394]);
     subplot(4,nDiv,i:nDiv:3*nDiv);
-    h=pcolor(t,az(Div(popu))/pi,Data(Div(popu),:));
-    ylim([min(az(Div(popu))/pi) max(az(Div(popu))/pi)])
+    h=pcolor(t,az(popu)/pi,Data(popu,:));
+    ylim([min(az(popu)/pi) max(az(popu)/pi)])
     set(h,'EdgeColor','none');
     ylabel('station azimuth \theta (\pi)')
     set(gca,'FontSize',14)
 
     % square stack of waveforms, smoothed
     subplot(4,nDiv,3*nDiv+i);
-    event1=sum(Data(Div(popu),:),1);
+    event1=sum(Data(popu,:),1);
     event1=smooth(event1.^2,nsmooth); % square stacking smoothing
     event1=event1./max(event1);
     plot(t,event1);
@@ -221,17 +220,17 @@ end
 
 % Time window (currently full window)
 tw = find(t >= min(t),1,'first'); 
-ntw = length(t(tw:end));
+ntw = length(t);
 
 % Fourier transform the data
-nfft = 2^nextpow2(length(t(tw:end)));
+nfft = 2^nextpow2(length(t));
 fspace0 = 1/dt * (0:(nfft/2))/nfft;
 nftot = length(fspace0);      % number of frequencies
 %ffilt = find(fspace0 >= lowF & fspace0 <= highF);
 
 % Bin the frequencies
 df = fspace0(2)-fspace0(1);
-fL = 0.5;
+fL = 0.8;
 fH = 1.5;
 ffilt = find(fspace0 >= fL & fspace0 <=fH);
 fspace = fspace0(ffilt);
@@ -261,9 +260,9 @@ end
 
 % Redefine values based on population of subarrays 
 % (currently same as total stations)
-t0j1 = t0j(Div);          % initial arrival from hypocenter
 np = sum(DivPop);         % number of stations in inversion population
 ncomb = ns*nDiv;          % total number of model parameters
+pl = sqrt(nDiv)*ones(1,ns);  
 
 % Sparsity parameter
 Orders = [-2;-1;0;1;2];
@@ -280,6 +279,7 @@ cvx_solver_settings('cvx_slvitr',2);
 %cvx_solver_settings -clear
 tic
 for fbin = 1:nfbin
+    disp(fbin)
     % Output models
     moutTemp = zeros(nLam,ncomb*binpop);
     mout = zeros(binpop,ncomb);
@@ -290,77 +290,68 @@ for fbin = 1:nfbin
 
     % Synthetic spectra 
     syntmp = zeros(np*binpop,nLam);
-    syn = zeros(np,binpop);
-    synV = zeros(size(uom));
 
     % Spectral Power for each source
-    specPower = zeros(nDiv,ns);
-    specPowerF = zeros(nLam,nDiv,ns);
-   
-    parfor f = 1:nLam       % parallelized over frequency
+    %specPowerF = zeros(nLam,nDiv,ns);
+    specPowerF = zeros(ns,nDiv,nLam);
 
-        findices = ((fbin-1)*binpop+1):(fbin*binpop);
-        f0s = fspace(findices); % frequency
-        %findices = (1:nf);
-        %f0s = fspace;
+    findices = ((fbin-1)*binpop+1):(fbin*binpop);
+    f0s = fspace(findices); % frequency
 
-        % Fill data vectors for frequency
-        u = DataSpec(Div,findices);
-        u = reshape(u,np*binpop,1)
+    % Fill data vectors for frequency
+    u = reshape(DataSpec(:,findices),np*binpop,1);
 
-        % Create kernels for each source location and station
-        K1 = zeros(np,ns);
-        Kf = zeros(np,ncomb);
+    % Create kernels for each source location and station
+    K1 = zeros(np,ns);
+    Kf = zeros(np,ncomb);
 
-        for d = 1:nDiv
-            % find the station indices within the subarray
-            popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
-            for i = 1:ns 
-                x_xi = xycenters(i,1);
-                y_xi = xycenters(i,2);
-                % Calculate travel time from each potential source
-                dis = sqrt( ( x_xi-x_st(Div(popu)) ).^2 + ( y_xi-y_st(Div(popu)) ).^2 )/111.2;
-                tij =interp1(P_trav(:,1),P_trav(:,2),dis,'linear','extrap');
-                for fi = 1:binpop
-                    % Fill kernels
-                    f0i = f0s(fi);
-                    K1((fi-1)*np+Div(popu),(fi-1)*ns+i) = (exp(2i*pi*f0i*(t0j1(Div(popu)) - tij)));
-                    Kf((fi-1)*np+Div(popu),(fi-1)*nDiv*ns+(d-1)*ns+i) = (exp(2i*pi*f0i*(t0j1(Div(popu)) - tij)));
-                end
+    for d = 1:nDiv
+        % find the station indices within the subarray
+        popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
+        for i = 1:ns 
+            % Calculate travel time from each potential source
+            for fi = 1:binpop
+                % Fill kernels
+                f0i = f0s(fi);
+                K1((fi-1)*np+popu,(fi-1)*ns+i) = (exp(2i*pi*f0i*(t0j1(popu) - tij(i,popu)')));
+                Kf((fi-1)*np+popu,(fi-1)*nDiv*ns+(d-1)*ns+i) = (exp(2i*pi*f0i*(t0j1(popu) - tij(i,popu)')));
             end
         end
-        
+    end
+   
+    parfor f = 1:nLam       % parallelized over frequency    
         % Perform the Inversion
-        lambda = Lambdas(f);                         % Sparsity prior weight
-        pl = sqrt(nDiv)*ones(1,ns);        
+        lambda = Lambdas(f);                         % Sparsity prior weight      
         m = GroupLassoBin(u,Kf,pl,lambda,ns,ncomb,binpop);
 
         syntmp(:,f) = Kf*m;
-        tmpspecPowerF = zeros(nDiv,ns);
+        %tmpspecPowerF = zeros(nDiv,ns);
+        tmpspecPowerF = zeros(ns,nDiv);
         moutTemp(f,:) = m
-        mm_out = zeros(nfbin,nDiv,ns);
         for fi = 1:binpop
-            findex = findices(fi);
-            fpop = ((fi-1)*np+1:fi*np);
             fsource = ((fi-1)*ncomb+1:fi*ncomb);
             mtmp = m(fsource);
 
             % Calculate power and synthetics at each frequency from the subevents
-            mmtmp = zeros(nDiv,ns);
-            tmpspecPower = zeros(nDiv,ns);
+            %mmtmp = zeros(nDiv,ns);
+            %tmpspecPower = zeros(nDiv,ns);
+            mmtmp = zeros(ns,nDiv);
+            tmpspecPower = zeros(ns,nDiv);
             for d = 1:nDiv
                 popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
-                Ktemp = K1((fi-1)*np+Div(popu),((fi-1)*ns+1):fi*ns);
+                Ktemp = K1((fi-1)*np+popu,((fi-1)*ns+1):fi*ns);
                 for s = 1:ns
-                    mmtmp(d,s) = mtmp((d-1)*ns+s);
-                    tmp = Ktemp(:,s)*mmtmp(d,s);
-                    tmpspecPower(d,s) =  sum(real(tmp).*real(tmp));
+                    %mmtmp(d,s) = mtmp((d-1)*ns+s);
+                    %tmp = Ktemp(:,s)*mmtmp(d,s);
+                    %tmpspecPower(d,s) =  sum(real(tmp).*real(tmp));
+                    mmtmp(s,d) = mtmp((d-1)*ns+s)';
+                    tmp = Ktemp(:,s)*mmtmp(s,d);
+                    tmpspecPower(s,d) =  sum(real(tmp).*real(tmp));
                 end
             end
             tmpspecPowerF = tmpspecPowerF + tmpspecPower;
-            specPower = specPower + tmpspecPower;
         end
-        specPowerF(f,:,:) = tmpspecPowerF;
+        specPowerF(:,:,f) = tmpspecPowerF;
 
     %%
     end
@@ -369,7 +360,7 @@ toc
 %               Calculate Error for Fits                 %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
     ErrorLamBin = zeros(nLam,1);
-    SynLam = zeros(nLam,np,nf);
+    syn = zeros(np,binpop);
     findices = ((fbin-1)*binpop+1):(fbin*binpop);
     f0s = fspace(findices);
     fLi = min(f0s);
@@ -386,7 +377,6 @@ toc
                end
             end
             syn(:,findex) = syntmp(fpop,la);
-            SynLam(la,:,findex) = syntmp(fpop,la);
         end
         ErrorLamBin(la) = 1/sqrt(np*binpop)*norm(DataSpec(:,findices) - syn);
     end
@@ -416,11 +406,10 @@ toc
     info.binpop = binpop;
     info.fspace = fspace;
     info.t = t;
-    info.tw = tw;
     info.nDiv = nDiv;
-    info.Div = Div;
     info.DivPop = DivPop;
     save([outdir,sprintf('InversionOutput_%d.mat',fbin)],'DataSpec','syntmp','specPowerF','mm','Lambdas','fspace','info','-v7.3');
 end
 poolobj = gcp('nocreate');
 delete(poolobj);
+toc

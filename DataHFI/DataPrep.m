@@ -136,16 +136,16 @@ end
 
 % detrend the noise
 wind = find(tspan < 0);
-for sti = 1:nsta
-   vDataFilts(sti) = subtract(vDataFilts(sti),mean(vDataFilts(sti).dep(wind))); 
-end
+% for sti = 1:nsta
+%    vDataFilts(sti) = subtract(vDataFilts(sti),mean(vDataFilts(sti).dep(wind))); 
+% end
 
 % taper edges and integrate velocity to displacement
 vDataFilts = taper(vDataFilts,0.1,0,'tukeywin',0.5);
 uDataFilts = integrate(vDataFilts,'trapezoidal-sac');
 
 % Remove any linear trend in displacements
-uDataFilts = removetrend(uDataFilts);
+%uDataFilts = removetrend(uDataFilts);
 
 vDataCorr = cut(vDataFilts,'x',t0,'n',twin);
 uDataCorr = cut(uDataFilts,'x',t0,'n',twin);
@@ -182,10 +182,16 @@ uxc = correlate(uDataCorr,'mcxc','noauto','normxc','reltime','peaks',{'npeaks',3
 vxc = correlate(vDataCorr,'mcxc','noauto','normxc','reltime','peaks',{'npeaks',3});
 %%
 % Least-squares fit for relative arrival times and polarities
-%vxc.cg(34546) = 1;
+gt1v = find(vxc.cg > 1);
+lt1v = find(vxc.cg < -1);
+vxc.cg(gt1v) = 1;
+vxc.cg(lt1v) = -1;
 [arrv,errv,polv,zmeanv,zstdv,ncv] = ttsolve(vxc,'snr',qsnrv);
 %%
-%uxc.cg(14598) = 1;
+gt1u = find(uxc.cg > 1);
+lt1u = find(uxc.cg < -1);
+uxc.cg(gt1u) = 1;
+uxc.cg(lt1u) = -1;
 [arru,erru,polu,zmeanu,zstdu,ncu] = ttsolve(uxc,'snr',qsnru);
 %% Extract correlation info, time shifts and polarities
 ucorrcoeff = eye(nsta);

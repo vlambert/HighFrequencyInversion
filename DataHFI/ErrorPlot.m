@@ -1,5 +1,5 @@
 %inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_multiF_LamSearch_repeater_disjoint/';
-inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Okhotsk/Okhotsk_2/';
+inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Okhotsk/Okhotsk_3u/';
 outDir = [inDir,'Figures/'];
 if ~exist(outDir,'dir')
     mkdir(outDir)
@@ -8,7 +8,7 @@ h1=figure(1);clf;
 leg = [];
 minX = 10000;
 maxX = 0;
-for i = 1:9
+for i = 1:5
     fid = fopen([inDir,sprintf('ModelErrorInfo_%d.txt',i)]);
 
     % Get sparsity information
@@ -35,7 +35,7 @@ for i = 1:9
     arr = textscan(fid,'%f %f');%,'Headerlines',1);
     arr = cell2mat(arr);
     %plot(log10(mp),log10(arr(:,2)),'LineWidth',2);hold on
-    plot(log10(arr(:,2)),log10(mp),'LineWidth',2);hold on
+    plot(log10(Lambdas),log10(arr(:,2)),'LineWidth',2);hold on
     if min(arr(:,1)) < minX
         minX = min(arr(:,1));
     end

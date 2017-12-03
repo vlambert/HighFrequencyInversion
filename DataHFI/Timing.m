@@ -14,8 +14,8 @@ clear all;close all;
 %inFile = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_0_9_1_LamSearch_repeater_disjoint/InversionOutput';
 %inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_multiF_LamSearch_repeater_disjoint/';
 %inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Nepal/Gorka_2/';
-inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Okhotsk/Okhotsk_2/';
-%inDir = 'Okhotsk_2/';
+%inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Okhotsk/Okhotsk_3u/';
+inDir = 'Okhotsk_3u/';
 outDir = [inDir,'Figures/'];
 compDir = [inDir,'Comparison/'];
 if ~exist(outDir,'dir')
@@ -29,7 +29,7 @@ end
 %            Plot Data and Model to Compare              %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%  
 fuse = [];
-nfiles = 9;
+nfiles = 8;
 for i = 1:nfiles
 
     inFile = [inDir,sprintf('InversionOutput_%d',i)];
@@ -187,31 +187,31 @@ for lambin = 1:length(Lambdas)
     %            Plot Source Time Functions (?)              %
     % % % % % % % % % % % % % % % % % % % % % % % % % % % % %% 
 
-    for di = 1:3
-        h2=figure(2);clf;
-        set(gcf,'Position',[-2554 620 915 748]);
-
-        hold on
-        for si = 1:nSu
-            mmtmp(fentries,di,si) = squeeze(mm(lambin,:,di,subevents(si)));
-            mmtmpAll(fentries,di,si,lambin) = squeeze(mm(lambin,:,di,subevents(si)));
-            mmt = (ifft(mmtmp(:,di,si),nt));
-            [u,d]=envelope(real(mmt));
-            [peaks,locs,w,p] = findpeaks(u,t);
-            subplot(nSu,1,si)
-            plot(t,mmt,t,u)
-            tmy = ylim;
-            for j = 1:length(peaks)
-                text(locs(j),1.1*tmy(2),sprintf('%.2f',locs(j)));
-            end
-        end
-        subplot(nSu,1,1)
-        title([sprintf('Frequencies %.2f - %.2f Hz',min(f0s),max(f0s)),'\lambda = ',sprintf('%.2f',Lambdas(lambin))])
-        tmx = xlim;
-        tmy = ylim;
-        set(get(gca,'title'),'Position',[0.4*(tmx(2)-tmx(1)) 1.3*tmy(2) 1.00011])
-        saveas(h2,[outDir,sprintf('SourceTim_Freq%d_subarray%d_lambin%d',i,di,lambin)],'png')
-    end
+     for di = 1:3
+%         h2=figure(2);clf;
+%         set(gcf,'Position',[-2554 620 915 748]);
+% 
+%         hold on
+         for si = 1:nSu
+%             mmtmp(fentries,di,si) = squeeze(mm(lambin,:,di,subevents(si)));
+             mmtmpAll(fentries,di,si,lambin) = squeeze(mm(lambin,:,di,subevents(si)));
+%             mmt = (ifft(mmtmp(:,di,si),nt));
+%             [u,d]=envelope(real(mmt));
+%             [peaks,locs,w,p] = findpeaks(u,t);
+%             subplot(nSu,1,si)
+%             plot(t,mmt,t,u)
+%             tmy = ylim;
+%             for j = 1:length(peaks)
+%                 text(locs(j),1.1*tmy(2),sprintf('%.2f',locs(j)));
+%             end
+         end
+%         subplot(nSu,1,1)
+%         title([sprintf('Frequencies %.2f - %.2f Hz',min(f0s),max(f0s)),'\lambda = ',sprintf('%.2f',Lambdas(lambin))])
+%         tmx = xlim;
+%         tmy = ylim;
+%         set(get(gca,'title'),'Position',[0.4*(tmx(2)-tmx(1)) 1.3*tmy(2) 1.00011])
+%         saveas(h2,[outDir,sprintf('SourceTim_Freq%d_subarray%d_lambin%d',i,di,lambin)],'png')
+     end
 end
 %%
 
@@ -247,8 +247,8 @@ for lambin = 1:length(Lambdas)
 end
 
 %%
-tstmmt1 = (ifft(mmtmpAll(:,di,1),nt));
-[ACF, lags, bounds] = autocorr(tstmmt1,[],2); % inspect autocorrelation 95 % confidence
-
-tstmmt2 = (ifft(mmtmpAll(:,di,2),nt));
-[ACF2, lags2, bounds2] = autocorr(tstmmt2,[],2); % inspect autocorrelation 95 % confidence
+% tstmmt1 = (ifft(mmtmpAll(:,di,1),nt));
+% [ACF, lags, bounds] = autocorr(tstmmt1,[],2); % inspect autocorrelation 95 % confidence
+% 
+% tstmmt2 = (ifft(mmtmpAll(:,di,2),nt));
+% [ACF2, lags2, bounds2] = autocorr(tstmmt2,[],2); % inspect autocorrelation 95 % confidence
