@@ -14,8 +14,8 @@ clear all;close all;
 %inFile = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_0_9_1_LamSearch_repeater_disjoint/InversionOutput';
 %inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_multiF_LamSearch_repeater_disjoint/';
 %inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Nepal/Gorka_2/';
-%inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Okhotsk/Okhotsk_3u/';
-inDir = 'Okhotsk_3u/';
+inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Okhotsk/Okhotsk_3u/';
+%inDir = 'Okhotsk_3u/';
 outDir = [inDir,'Figures/'];
 compDir = [inDir,'Comparison/'];
 if ~exist(outDir,'dir')
@@ -29,7 +29,7 @@ end
 %            Plot Data and Model to Compare              %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%  
 fuse = [];
-nfiles = 8;
+nfiles = 19;
 for i = 1:nfiles
 
     inFile = [inDir,sprintf('InversionOutput_%d',i)];

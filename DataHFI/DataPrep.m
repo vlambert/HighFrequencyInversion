@@ -10,8 +10,8 @@ clear all; close all;
 %DataF=readseizmo('/Users/valerelambert/Seismo_Work/Back_Projection/Nepal2015/USArray/Vel/rtr/*.z');
 %DataF=readseizmo('/Users/valerelambert/Seismo_Work/Back_Projection/Nepal2015/EUArray/Vel/rtr/*.z');
 %DataF=readseizmo('/Users/valerelambert/Seismo_Work/Back_Projection/SeaOkhotsk2013/EUArray/Vel/rtr/*.z');
-vDataF=readseizmo('/Users/valerelambert/Seismo_Work/Back_Projection/SeaOkhotsk2013/AUArray/Vel/rtr/*.z');
-%vDataF=readseizmo('/Users/valerelambert/Seismo_Work/Back_Projection/SeaOkhotsk2013/USArray/Vel/rtr/*.z');
+%vDataF=readseizmo('/Users/valerelambert/Seismo_Work/Back_Projection/SeaOkhotsk2013/AUArray/Vel/rtr/*.z');
+vDataF=readseizmo('/Users/valerelambert/Seismo_Work/Back_Projection/SeaOkhotsk2013/USArray/Vel/rtr/*.z');
 
 %DataF = integrate(vDataF,'trapezoidal-sac');
 DataF = vDataF;%integrate(vDataF);
@@ -20,9 +20,9 @@ EVLA=gh(DataF(1),'EVLA');
 EVLO=gh(DataF(1),'EVLO');
 KZTIME=gh(DataF(1),'KZTIME');
 %DataF = vDataF;
-%clear vDataF DataF
+clear vDataF DataF
 %vDataF=readseizmo('/Users/valerelambert/Seismo_Work/Back_Projection/Nepal2015/EUArray/Vel/rtr/*.z');
-%DataF=readseizmo('/Users/valerelambert/Seismo_Work/Back_Projection/SeaOkhotsk2013/EUArray/Vel/rtr/Vertical/*.z');
+DataF=readseizmo('/Users/valerelambert/Seismo_Work/Back_Projection/SeaOkhotsk2013/EUArray/Vel/rtr/Vertical/*.z');
 
 % normalize waveforms
 %DataF=normalize(DataF);
@@ -67,12 +67,12 @@ for st=1:nsta
    sta.az_i(st,1)     = gh(DataF(st),'AZ');
    tp = tauptime('mod','iasp91','dep',EVDP,'EV',[EVLA,EVLO],'ST',[sta.Lat_i(st,1),sta.Lon_i(st,1)],'PH','P');
    KZTIME2=gh(DataF(st),'KZTIME');
-   %sta.tt_i(st,1) = tp.time - (datenum(KZTIME2)-datenum(KZTIME))*24*60*60;
+   sta.tt_i(st,1) = tp.time - (datenum(KZTIME2)-datenum(KZTIME))*24*60*60;
    if isnan(sta.az_i(st,1))
        [DIST_t,AZ_t,BAZ_t] = vincentyinv(EVLA,EVLO,sta.Lat_i(st,1),sta.Lon_i(st,1)); % from Seizmo
        sta.az_i(st,1)=AZ_t;
    end
-   sta.tt_i(st,1) = tp.time;
+   %sta.tt_i(st,1) = tp.time;
    sta.rr_i(st,1) = tp.distance; 
    
    Time_temp = (gh(DataF(st),'B'):gh(DataF(st),'DELTA'):gh(DataF(st),'E')); % Time series for seismogram
@@ -136,16 +136,16 @@ end
 
 % detrend the noise
 wind = find(tspan < 0);
-% for sti = 1:nsta
-%    vDataFilts(sti) = subtract(vDataFilts(sti),mean(vDataFilts(sti).dep(wind))); 
-% end
+for sti = 1:nsta
+   vDataFilts(sti) = subtract(vDataFilts(sti),mean(vDataFilts(sti).dep(wind))); 
+end
 
 % taper edges and integrate velocity to displacement
 vDataFilts = taper(vDataFilts,0.1,0,'tukeywin',0.5);
 uDataFilts = integrate(vDataFilts,'trapezoidal-sac');
 
 % Remove any linear trend in displacements
-%uDataFilts = removetrend(uDataFilts);
+uDataFilts = removetrend(uDataFilts);
 
 vDataCorr = cut(vDataFilts,'x',t0,'n',twin);
 uDataCorr = cut(uDataFilts,'x',t0,'n',twin);
@@ -406,8 +406,8 @@ info.EVDP = EVDP;
 info.EVLA = EVLA;
 info.EVLO = EVLO;
 %save('OkhotskData_US.mat','finalUData','finalVData','sta','info','corr','-v7.3');
-%save('OkhotskData_EU.mat','finalUData','finalVData','sta','info','corr','-v7.3');
-save('OkhotskData_AU.mat','finalUData','finalVData','sta','info','corr','-v7.3');
+save('OkhotskData_EU.mat','finalUData','finalVData','sta','info','corr','-v7.3');
+%save('OkhotskData_AU.mat','finalUData','finalVData','sta','info','corr','-v7.3');
 
 %% Travel times with TauP
 

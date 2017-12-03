@@ -9,7 +9,7 @@ if ~exist(outdir,'dir')
     mkdir(outdir)
 end
 
-corrCrit = 0.6;
+corrCrit = 0.7;
 
 % US
 US=load('OkhotskData2_US.mat');
@@ -46,11 +46,6 @@ AUXCW = AU.corr.XCu;
 passAU = find(AUXCF >= corrCrit);
 AUData = USData(passAU,:);
 AUArray = USArray(passAU,:);
-
-UStrace = US.corr.traceu;
-EUtrace = EU.corr.traceu;
-AUtrace = AU.corr.traceu;
-
 
 StaLoc = [USArray;EUArray;AUArray];
 Data = [USData;EUData;AUData];
