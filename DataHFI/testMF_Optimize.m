@@ -14,7 +14,7 @@ tic
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Okhotsk_5u3_USarray/';
+outdir = 'Okhotsk_5u4_USarray/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -171,18 +171,30 @@ for jj=1:nsta
 end
 
 tij = zeros(ns,nsta);
-
-for d = 1:nDiv
-    % find the station indices within the subarray
-    popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
-    for i = 1:ns 
-        x_xi = xycenters(i,1);
-        y_xi = xycenters(i,2);
-        % Calculate travel time from each potential source
-        dis = sqrt( ( x_xi-x_st(popu) ).^2 + ( y_xi-y_st(popu) ).^2 )/111.2;
-        tij(i,popu) =interp1(P_trav(:,1),P_trav(:,2),dis,'linear','extrap');
-    end
+tij2 = zeros(ns,nsta);
+for si = 1:ns
+      x_xi = xycenters(si,1);
+      y_xi = xycenters(si,2);
+      for st = 1:nsta
+      tp = tauptime('mod','iasp91','dep',EVDP,'EV',[EVLA+y_xi/deg2km,EVLO+x_xi/deg2km],'ST',[StaLoc(st,1),StaLoc(st,2)],'PH','P'); 
+      tij2(si,st) = tp.time;
+      end
 end
+
+
+tij = tij2;
+% for d = 1:nDiv
+%     % find the station indices within the subarray
+%     popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
+%     for i = 1:ns 
+%         x_xi = xycenters(i,1);
+%         y_xi = xycenters(i,2);
+%         % Calculate travel time from each potential source
+%         dis = sqrt( ( x_xi-x_st(popu) ).^2 + ( y_xi-y_st(popu) ).^2 )/111.2;
+% 
+%         tij(i,popu) =interp1(P_trav(:,1),P_trav(:,2),dis,'linear','extrap');
+%     end
+% end
 
 clear W
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
