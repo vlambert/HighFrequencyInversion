@@ -70,51 +70,51 @@ end
 ErrorT = zeros(length(Lambdas),1);
 ErrorF = zeros(length(Lambdas),1);
 
-for ij = 1:length(Lambdas)
-    
-    ErrorT(ij) = 1/sqrt(nsta) * norm(DataI - iSyn(:,:,ij));
-    ErrorF(ij) = 1/sqrt(nsta) * norm(DataSpec - syn(:,:,ij));
-    
-    figure(6);clf;
-    set(gcf,'Position',[1 1 1140 nDiv*190])
-    for i = 1:nDiv
-        popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
+% for ij = 1:length(Lambdas)
+%     
+%     ErrorT(ij) = 1/sqrt(nsta) * norm(DataI - iSyn(:,:,ij));
+%     ErrorF(ij) = 1/sqrt(nsta) * norm(DataSpec - syn(:,:,ij));
+%     
+%     figure(6);clf;
+%     set(gcf,'Position',[1 1 1140 nDiv*190])
+%     for i = 1:nDiv
+%         popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
+% 
+%         % Data spectra u(omega)
+%         subplot(nDiv,4,(i-1)*4+1)
+%         plot(fspace,real(DataSpec(popu,:)));
+%         if i == 1
+%             title('Data u (\omega)')
+%         end
+%         ylabel(sprintf('u (t), Subarray %d',i))
+% 
+%         % Data time series u(t)
+%         subplot(nDiv,4,(i-1)*4+2)
+%         plot(t,DataI(popu,:));
+%         if i == 1
+%             title('Data u (t)')
+%         end
+%         xlim([t(1) t(end)])
+% 
+%         % Synthetic spectra u(omega)
+%         ylabel(sprintf('Subarray %d',i))
+%         subplot(nDiv,4,(i-1)*4+3)
+%         plot(fspace,real(syn(popu,:,ij)));  
+%         if i == 1
+%             title(['Inv u (\omega), \sigma = ',sprintf('%.3f',ErrorF(ij))])
+%         end
+% 
+%         % Synthetic time series u(t)
+%         subplot(nDiv,4,(i-1)*4+4)
+%         plot(t,iSyn(popu,:,ij));  
+%         if i == 1
+%             title(['Inv u (t), \lambda = ',sprintf('%.3f',Lambdas(ij)),', \sigma = ',sprintf('%.3f',ErrorT(ij))])
+%         end
+%         xlim([t(1) t(end)])
+%     end
+%     saveas(gcf,[compDir,strrep(sprintf('Waveforms_Lam%.2f',Lambdas(ij)),'.','_')],'png')
+% end
 
-        % Data spectra u(omega)
-        subplot(nDiv,4,(i-1)*4+1)
-        plot(fspace,real(DataSpec(popu,:)));
-        if i == 1
-            title('Data u (\omega)')
-        end
-        ylabel(sprintf('u (t), Subarray %d',i))
-
-        % Data time series u(t)
-        subplot(nDiv,4,(i-1)*4+2)
-        plot(t,DataI(popu,:));
-        if i == 1
-            title('Data u (t)')
-        end
-        xlim([t(1) t(end)])
-
-        % Synthetic spectra u(omega)
-        ylabel(sprintf('Subarray %d',i))
-        subplot(nDiv,4,(i-1)*4+3)
-        plot(fspace,real(syn(popu,:,ij)));  
-        if i == 1
-            title(['Inv u (\omega), \sigma = ',sprintf('%.3f',ErrorF(ij))])
-        end
-
-        % Synthetic time series u(t)
-        subplot(nDiv,4,(i-1)*4+4)
-        plot(t,iSyn(popu,:,ij));  
-        if i == 1
-            title(['Inv u (t), \lambda = ',sprintf('%.3f',Lambdas(ij)),', \sigma = ',sprintf('%.3f',ErrorT(ij))])
-        end
-        xlim([t(1) t(end)])
-    end
-    saveas(gcf,[compDir,strrep(sprintf('Waveforms_Lam%.2f',Lambdas(ij)),'.','_')],'png')
-end
-return
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                    Plot Subevents                      %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %% 
@@ -141,6 +141,18 @@ dx = x_bp(2)-x_bp(1);
 dy = y_bp(2)-y_bp(1);
 
 %% Loop over damping parameters
+EVLO = info.EVLO;
+EVLA = info.EVLA;
+deg2km = 111.2;
+
+cx = [153.28; 153.35; 153.47; 153.51;  153.65] - EVLO;
+cy = [54.88;  54.90;  54.82; 54.48;     54.15] - EVLA;
+cx = cx*deg2km;
+cy = cy*deg2km;
+xycenters = [cx,cy];
+ns = length(cx);
+%%
+
 for lambin = 1:length(Lambdas)
 
     h1=figure(1);clf;
@@ -155,25 +167,36 @@ for lambin = 1:length(Lambdas)
 
     for id = 1:nDiv
        subplot(qx,qy,id)
-       grid = reshape(specPowerF(:,id,lambin),nybp,nxbp);
-       %grid = reshape(specPowerF(lambin,id,:),nybp,nxbp);
-       pcolor(x_bp-dx/2,y_bp-dy/2,grid)
+       %grid1 = reshape(specPowerF(:,id,lambin),nybp,nxbp);
+       grid1 = specPowerF(:,id,lambin);
+       %colorspec=parula(npairs);
+       %pcolor(x_bp-dx/2,y_bp-dy/2,grid)
+       axis equal
+       xlim([-50 50])
+       ylim([-100 50])
+       scatter(xycenters(:,1),xycenters(:,2),500,grid1,'filled')
        colorbar;
        title(sprintf('Subarray %d Power',id))
-       axis equal tight
+
     end
     subplot(qx,qy,nDiv+1)
-    grid = reshape(sum(specPowerF(:,:,lambin),2),nybp,nxbp);
-    pcolor(x_bp-dx/2,y_bp-dy/2,grid)
+    %grid1 = reshape(sum(specPowerF(:,:,lambin),2),nybp,nxbp);
+    grid2 = sum(specPowerF(:,:,lambin),2);
+    axis equal
+    xlim([-50 50])
+    ylim([-100 50])
+    scatter(xycenters(:,1),xycenters(:,2),500,grid2,'filled')
+    %pcolor(x_bp-dx/2,y_bp-dy/2,grid)
     colorbar
     title([sprintf('Combined Power: %.2f - %.2f Hz',min(f0s),max(f0s)),'\lambda = ',sprintf('%.2f',Lambdas(lambin))])
-    axis equal tight
+
     Lambdas(lambin);
     saveas(h1,[outDir,sprintf('SourceLoc_Freq%d_Lambin%d',i,lambin)],'png')
 
     CumSpecPower = sum(specPowerF(:,:,lambin),2);
     factor = 0.10;
-    subevents = find(CumSpecPower > factor * max(CumSpecPower));
+    %subevents = find(CumSpecPower > factor * max(CumSpecPower));
+    subevents = (1:ns);
     nSu = length(subevents);
 
     cf = round(median(fspace));
@@ -187,7 +210,7 @@ for lambin = 1:length(Lambdas)
     %            Plot Source Time Functions (?)              %
     % % % % % % % % % % % % % % % % % % % % % % % % % % % % %% 
 
-     for di = 1:3
+     for di = 1:nDiv
 %         h2=figure(2);clf;
 %         set(gcf,'Position',[-2554 620 915 748]);
 % 
@@ -222,7 +245,7 @@ end
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %% 
 fc = (max(max(fuse))+min(min(fuse)))/2;
 for lambin = 1:length(Lambdas)
-    for di = 1:3
+    for di = 1:nDiv
         h3=figure(3);clf;
         set(gcf,'Position',[-2554 620 915 748]);
         hold on

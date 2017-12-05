@@ -103,7 +103,7 @@ for st=1:nsta
    DataFilt(st,:) = DataS(st,:);
    % Filter data for cross correlation
    lowF  = 0.2; % Hz
-   highF = 5.0; % Hz
+   highF = 2.0; % Hz
    fnyq  = Fs/2; 
    [B,A] = butter(4,[lowF highF]./fnyq);
    DataFilt(st,:) = filter(B,A,DataS(st,:));

@@ -1,5 +1,6 @@
 %inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_multiF_LamSearch_repeater_disjoint/';
-inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Okhotsk/Okhotsk_3u/';
+%inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Okhotsk/Okhotsk_4u/';
+inDir = 'Okhotsk_5u_USarray/';
 outDir = [inDir,'Figures/'];
 if ~exist(outDir,'dir')
     mkdir(outDir)
@@ -8,7 +9,7 @@ h1=figure(1);clf;
 leg = [];
 minX = 10000;
 maxX = 0;
-for i = 1:5
+for i = 1:16
     fid = fopen([inDir,sprintf('ModelErrorInfo_%d.txt',i)]);
 
     % Get sparsity information
@@ -35,7 +36,7 @@ for i = 1:5
     arr = textscan(fid,'%f %f');%,'Headerlines',1);
     arr = cell2mat(arr);
     %plot(log10(mp),log10(arr(:,2)),'LineWidth',2);hold on
-    plot(log10(Lambdas),log10(arr(:,2)),'LineWidth',2);hold on
+    plot(arr(:,2),mp,'LineWidth',2);hold on
     if min(arr(:,1)) < minX
         minX = min(arr(:,1));
     end
@@ -49,6 +50,6 @@ grid on
 set(gca,'FontSize',14);
 legend(leg,'Location','northeast')
 legend boxoff
-xlabel('Residual')
-ylabel('Regularization');
+xlabel('L2-norm')
+ylabel('L1-norm');
 saveas(h1,[outDir,sprintf('Misfit_Curve')],'png')

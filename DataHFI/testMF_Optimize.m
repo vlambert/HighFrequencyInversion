@@ -1,4 +1,4 @@
-%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %         High-frequency inverse technique for            %
 %   sparse sub-event location and source time retrieval   %
 %      using convex optimization with grouped-lasso       %
@@ -14,7 +14,7 @@ tic
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Okhotsk_6u/';
+outdir = 'Okhotsk_5u_USarray/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -72,8 +72,8 @@ USArray = [US.sta.Lat_i(passUS,:), US.sta.Lon_i(passUS,:)];
 % AUData = AU.finalUData(passAU,:);
 % AUArray = [AU.sta.Lat_i(passAU,:), AU.sta.Lon_i(passAU,:)];
 % 
-StaLoc = [USArray];%EUArray;AUArray];
-Data = [USData];%EUData;AUData];
+StaLoc = [USArray];%;EUArray;AUArray];
+Data = [USData];%;EUData;AUData];
 R = [US.sta.rr_i(passUS)];% EU.sta.rr_i(passEU); AU.sta.rr_i(passAU)];
 az =[US.sta.az_i(passUS)];% EU.sta.az_i(passEU); AU.sta.az_i(passAU)];
 tt =[US.sta.tt_i(passUS)];% EU.sta.tt_i(passEU); AU.sta.tt_i(passAU)];
@@ -87,9 +87,9 @@ nDiv = 1;
 nsta = size(StaLoc,1);
 
 % Set up coherent array divisions
-DivPop = [0;size(USArray,1)];%size(EUArray,1);size(AUArray,1)];
+DivPop = [0;size(USArray,1)];%;size(EUArray,1);size(AUArray,1)];
 
-DivColor = ['k';'r';'b'];%'m','g'];%,'y']
+DivColor = ['k'];%;'r';'b'];%'m','g'];%,'y']
 clear -regexp ^US ;%^AU ^EU ^pass
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -104,8 +104,8 @@ clear -regexp ^US ;%^AU ^EU ^pass
 
 dx = 0.1; % lat and lon
 dy = dx;
-xmin = -1; xmax = 1;
-ymin = -1; ymax = 1;
+xmin = -0.1; xmax = 0.1;
+ymin = -0.1; ymax = 0.1;
 
 
 x_bp = (xmin:dx:xmax)*deg2km;
@@ -113,10 +113,17 @@ y_bp = (ymin:dy:ymax)*deg2km;
 nxbp = length(x_bp);
 nybp = length(y_bp);
 
-ns = (length(x_bp))*(length(y_bp));      % total number of cells / sources
-cx = reshape(repmat(x_bp,nybp,1),ns,1);
-cy = reshape(repmat(y_bp',nxbp,1),ns,1);
+% ns = (length(x_bp))*(length(y_bp));      % total number of cells / sources
+% cx = reshape(repmat(x_bp,nybp,1),ns,1);
+% cy = reshape(repmat(y_bp',nxbp,1),ns,1);
+% xycenters = [cx,cy];
+
+cx = [153.28; 153.35; 153.47; 153.51;  153.65] - EVLO;
+cy = [54.88;  54.90;  54.82; 54.48;     54.15] - EVLA;
+cx = cx*deg2km;
+cy = cy*deg2km;
 xycenters = [cx,cy];
+ns = length(cx);
 
 %% plot station map (Figure 1)
 h1=figure(1);clf;
@@ -236,7 +243,7 @@ ffilt = find(fspace0 >= fL & fspace0 <=fH);
 fspace = fspace0(ffilt);
 nf = length(fspace);
 
-binpop = 50;
+binpop = 20;
 overflow = binpop - mod(length(ffilt),binpop);
 if overflow ~= 0
    ffilt = ffilt(1):(ffilt(end)+overflow); 
@@ -244,7 +251,7 @@ end
 fspace = fspace0(ffilt);
 nf = length(fspace); % number of frequencies
 nfbin = nf/binpop;
-return
+
 DataSpec = zeros(nsta,nf);
 for i = 1:nsta
     spec = fft(DataFilt(i,tw:end),nfft);
@@ -265,7 +272,7 @@ ncomb = ns*nDiv;          % total number of model parameters
 pl = sqrt(nDiv)*ones(1,ns);  
 
 % Sparsity parameter
-Orders = [-4;-3;-2;-1;0;1;2];
+Orders = [-3;-2;-1;0;1;2;3];
 factors = [1;5];
 Lambdas = zeros(length(Orders)*length(factors),1);
 for i1 = 1:length(Orders)
