@@ -15,7 +15,7 @@ clear all;close all;
 %inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_multiF_LamSearch_repeater_disjoint/';
 %inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Nepal/Gorka_2/';
 %inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Okhotsk/Okhotsk_3u/';
-inDir = 'Okhotsk_5u_USarray/';
+inDir = 'Okhotsk_5u2_USarray/';
 outDir = [inDir,'Figures/'];
 compDir = [inDir,'Comparison/'];
 if ~exist(outDir,'dir')
@@ -70,50 +70,50 @@ end
 ErrorT = zeros(length(Lambdas),1);
 ErrorF = zeros(length(Lambdas),1);
 
-% for ij = 1:length(Lambdas)
-%     
-%     ErrorT(ij) = 1/sqrt(nsta) * norm(DataI - iSyn(:,:,ij));
-%     ErrorF(ij) = 1/sqrt(nsta) * norm(DataSpec - syn(:,:,ij));
-%     
-%     figure(6);clf;
-%     set(gcf,'Position',[1 1 1140 nDiv*190])
-%     for i = 1:nDiv
-%         popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
-% 
-%         % Data spectra u(omega)
-%         subplot(nDiv,4,(i-1)*4+1)
-%         plot(fspace,real(DataSpec(popu,:)));
-%         if i == 1
-%             title('Data u (\omega)')
-%         end
-%         ylabel(sprintf('u (t), Subarray %d',i))
-% 
-%         % Data time series u(t)
-%         subplot(nDiv,4,(i-1)*4+2)
-%         plot(t,DataI(popu,:));
-%         if i == 1
-%             title('Data u (t)')
-%         end
-%         xlim([t(1) t(end)])
-% 
-%         % Synthetic spectra u(omega)
-%         ylabel(sprintf('Subarray %d',i))
-%         subplot(nDiv,4,(i-1)*4+3)
-%         plot(fspace,real(syn(popu,:,ij)));  
-%         if i == 1
-%             title(['Inv u (\omega), \sigma = ',sprintf('%.3f',ErrorF(ij))])
-%         end
-% 
-%         % Synthetic time series u(t)
-%         subplot(nDiv,4,(i-1)*4+4)
-%         plot(t,iSyn(popu,:,ij));  
-%         if i == 1
-%             title(['Inv u (t), \lambda = ',sprintf('%.3f',Lambdas(ij)),', \sigma = ',sprintf('%.3f',ErrorT(ij))])
-%         end
-%         xlim([t(1) t(end)])
-%     end
-%     saveas(gcf,[compDir,strrep(sprintf('Waveforms_Lam%.2f',Lambdas(ij)),'.','_')],'png')
-% end
+for ij = 1:length(Lambdas)
+    
+    ErrorT(ij) = 1/sqrt(nsta) * norm(DataI - iSyn(:,:,ij));
+    ErrorF(ij) = 1/sqrt(nsta) * norm(DataSpec - syn(:,:,ij));
+    
+    figure(6);clf;
+    set(gcf,'Position',[1 1 1140 nDiv*190])
+    for i = 1:nDiv
+        popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
+
+        % Data spectra u(omega)
+        subplot(nDiv,4,(i-1)*4+1)
+        plot(fspace,real(DataSpec(popu,:)));
+        if i == 1
+            title('Data u (\omega)')
+        end
+        ylabel(sprintf('u (t), Subarray %d',i))
+
+        % Data time series u(t)
+        subplot(nDiv,4,(i-1)*4+2)
+        plot(t,DataI(popu,:));
+        if i == 1
+            title('Data u (t)')
+        end
+        xlim([t(1) t(end)])
+
+        % Synthetic spectra u(omega)
+        ylabel(sprintf('Subarray %d',i))
+        subplot(nDiv,4,(i-1)*4+3)
+        plot(fspace,real(syn(popu,:,ij)));  
+        if i == 1
+            title(['Inv u (\omega), \sigma = ',sprintf('%.3f',ErrorF(ij))])
+        end
+
+        % Synthetic time series u(t)
+        subplot(nDiv,4,(i-1)*4+4)
+        plot(t,iSyn(popu,:,ij));  
+        if i == 1
+            title(['Inv u (t), \lambda = ',sprintf('%.4f',Lambdas(ij)),', \sigma = ',sprintf('%.3f',ErrorT(ij))])
+        end
+        xlim([t(1) t(end)])
+    end
+    saveas(gcf,[compDir,strrep(sprintf('Waveforms_Lam%.4f',Lambdas(ij)),'.','_')],'png')
+end
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                    Plot Subevents                      %
@@ -188,7 +188,7 @@ for lambin = 1:length(Lambdas)
     scatter(xycenters(:,1),xycenters(:,2),500,grid2,'filled')
     %pcolor(x_bp-dx/2,y_bp-dy/2,grid)
     colorbar
-    title([sprintf('Combined Power: %.2f - %.2f Hz',min(f0s),max(f0s)),'\lambda = ',sprintf('%.2f',Lambdas(lambin))])
+    title([sprintf('Combined Power: %.2f - %.2f Hz',min(f0s),max(f0s)),'\lambda = ',sprintf('%.4f',Lambdas(lambin))])
 
     Lambdas(lambin);
     saveas(h1,[outDir,sprintf('SourceLoc_Freq%d_Lambin%d',i,lambin)],'png')
@@ -261,7 +261,7 @@ for lambin = 1:length(Lambdas)
             end
         end
         subplot(nSu,1,1)
-        title([sprintf('Frequencies %.2f - %.2f Hz',min(min(fuse)),max((max(fuse)))),'\lambda = ',sprintf('%.2f',Lambdas(lambin))]);
+        title([sprintf('Frequencies %.2f - %.2f Hz',min(min(fuse)),max((max(fuse)))),'\lambda = ',sprintf('%.4f',Lambdas(lambin))]);
         tmx = xlim;
         tmy = ylim;
         set(get(gca,'title'),'Position',[0.4*(tmx(2)-tmx(1)) 1.3*tmy(2) 1.00011])

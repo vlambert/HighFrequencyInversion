@@ -14,7 +14,7 @@ tic
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Okhotsk_5u_USarray/';
+outdir = 'Okhotsk_5u3_USarray/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -272,8 +272,8 @@ ncomb = ns*nDiv;          % total number of model parameters
 pl = sqrt(nDiv)*ones(1,ns);  
 
 % Sparsity parameter
-Orders = [-3;-2;-1;0;1;2;3];
-factors = [1;5];
+Orders = [-4;-3;-2;-1;0;1;2;3;4];
+factors = [1;2.5;5;7.5];
 Lambdas = zeros(length(Orders)*length(factors),1);
 for i1 = 1:length(Orders)
     for i2 = 1:length(factors)
@@ -282,7 +282,7 @@ for i1 = 1:length(Orders)
 end
 nLam = length(Lambdas);
 
-cvx_solver_settings('cvx_slvitr',2);
+%cvx_solver_settings('cvx_slvitr',2);
 %cvx_solver_settings -clear
 tic
 for fbin = 1:nfbin
