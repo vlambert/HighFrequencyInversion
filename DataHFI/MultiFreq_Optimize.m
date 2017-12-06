@@ -102,7 +102,7 @@ clear -regexp ^US ;%^AU ^EU ^pass
 %xmin = -10; xmax = 20;
 %ymin = -10; ymax = 20;
 
-dx = 0.1; % lat and lon
+dx = 0.2; % lat and lon
 dy = dx;
 xmin = -1; xmax = 1;
 ymin = -1; ymax = 1;
@@ -149,7 +149,7 @@ nsmooth=10;  % smoothing for plotting (period / sampling)
 nt=length(t);
 
 % Load travel times
-P_trav = load('P_trav_607_taup.txt');    % TauP with IASP91 velocity model
+%P_trav = load('P_trav_607_taup.txt');    % TauP with IASP91 velocity model
 
 % Window function
 W = tukeywin(nt,0.2); % 0.5, 0.75, 1
@@ -157,25 +157,32 @@ W = W./max(W);
 
 % Distance and travel time from hypocenter to each station 
 dist = R/deg2km; 
-t0j1 =  tt;
 
 for jj=1:nsta
     Data(jj,:)=W'.*Data(jj,:)./max(abs(Data(jj,:)));
 end
 
-tij = zeros(ns,nsta);
-
-for d = 1:nDiv
-    % find the station indices within the subarray
-    popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
-    for i = 1:ns 
-        x_xi = xycenters(i,1);
-        y_xi = xycenters(i,2);
-        % Calculate travel time from each potential source
-        dis = sqrt( ( x_xi-x_st(popu) ).^2 + ( y_xi-y_st(popu) ).^2 )/111.2;
-        tij(i,popu) =interp1(P_trav(:,1),P_trav(:,2),dis,'linear','extrap');
-    end
+dtij = zeros(ns,nsta);
+for si = 1:ns
+      x_xi = xycenters(si,1);
+      y_xi = xycenters(si,2);
+      for st = 1:nsta
+      tp = tauptime('mod','iasp91','dep',EVDP,'EV',[EVLA+y_xi/deg2km,EVLO+x_xi/deg2km],'ST',[StaLoc(st,1),StaLoc(st,2)],'PH','P'); 
+      dtij(si,st) = tt(st)-tp.time;
+      end
 end
+
+% for d = 1:nDiv
+%     % find the station indices within the subarray
+%     popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
+%     for i = 1:ns 
+%         x_xi = xycenters(i,1);
+%         y_xi = xycenters(i,2);
+%         % Calculate travel time from each potential source
+%         dis = sqrt( ( x_xi-x_st(popu) ).^2 + ( y_xi-y_st(popu) ).^2 )/111.2;
+%         tij(i,popu) =interp1(P_trav(:,1),P_trav(:,2),dis,'linear','extrap');
+%     end
+% end
 
 clear W
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -210,7 +217,7 @@ end
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 fnyq = 1/dt/2;      % Nyquist frequency
 lowF  = 0.2;       % Hz
-highF = 2.0;        % Hz
+highF = 2.3;        % Hz
 
 DataFilt = Data;
 [B,A] = butter(4,[lowF highF]./fnyq);
@@ -236,7 +243,7 @@ ffilt = find(fspace0 >= fL & fspace0 <=fH);
 fspace = fspace0(ffilt);
 nf = length(fspace);
 
-binpop = 50;
+binpop = 20;
 overflow = binpop - mod(length(ffilt),binpop);
 if overflow ~= 0
    ffilt = ffilt(1):(ffilt(end)+overflow); 
@@ -244,7 +251,7 @@ end
 fspace = fspace0(ffilt);
 nf = length(fspace); % number of frequencies
 nfbin = nf/binpop;
-return
+
 DataSpec = zeros(nsta,nf);
 for i = 1:nsta
     spec = fft(DataFilt(i,tw:end),nfft);
@@ -312,9 +319,10 @@ for fbin = 1:nfbin
             % Calculate travel time from each potential source
             for fi = 1:binpop
                 % Fill kernels
-                f0i = f0s(fi);
-                K1((fi-1)*np+popu,(fi-1)*ns+i) = (exp(2i*pi*f0i*(t0j1(popu) - tij(i,popu)')));
-                Kf((fi-1)*np+popu,(fi-1)*nDiv*ns+(d-1)*ns+i) = (exp(2i*pi*f0i*(t0j1(popu) - tij(i,popu)')));
+                K1((fi-1)*np+popu,(fi-1)*ns+i) = (exp(2i*pi*f0s(fi)*(dtij(i,popu)')));
+                Kf((fi-1)*np+popu,(fi-1)*nDiv*ns+(d-1)*ns+i) = (exp(2i*pi*f0s(fi)*(dtij(i,popu)')));
+%                 K1((fi-1)*np+popu,(fi-1)*ns+i) = (exp(2i*pi*f0i*(t0j1(popu) - tij(i,popu)')));
+%                 Kf((fi-1)*np+popu,(fi-1)*nDiv*ns+(d-1)*ns+i) = (exp(2i*pi*f0i*(t0j1(popu) - tij(i,popu)')));
             end
         end
     end
@@ -359,35 +367,35 @@ toc
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %               Calculate Error for Fits                 %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-    ErrorLamBin = zeros(nLam,1);
-    syn = zeros(np,binpop);
-    findices = ((fbin-1)*binpop+1):(fbin*binpop);
-    f0s = fspace(findices);
-    fLi = min(f0s);
-    fHi = max(f0s);
+%     ErrorLamBin = zeros(nLam,1);
+%     syn = zeros(np,binpop);
+%     findices = ((fbin-1)*binpop+1):(fbin*binpop);
+%     f0s = fspace(findices);
+%     fLi = min(f0s);
+%     fHi = max(f0s);
     for la = 1:nLam
         for fi = 1:binpop
-            findex = fi;
-            fpop = ((fi-1)*np+1:fi*np);
+%             findex = fi;
+%             fpop = ((fi-1)*np+1:fi*np);
             fsource = ((fi-1)*ncomb+1:fi*ncomb);
-            mout(findex,:) = moutTemp(la,fsource); 
+            mout(fi,:) = moutTemp(la,fsource); 
             for d = 1:nDiv
                for s = 1:ns 
-                  mm(la,findex,d,s) = mout(findex,(d-1)*ns+s);
+                  mm(la,findex,d,s) = mout(fi,(d-1)*ns+s);
                end
             end
-            syn(:,findex) = syntmp(fpop,la);
+%             syn(:,findex) = syntmp(fpop,la);
         end
-        ErrorLamBin(la) = 1/sqrt(np*binpop)*norm(DataSpec(:,findices) - syn);
+%         ErrorLamBin(la) = 1/sqrt(np*binpop)*norm(DataSpec(:,findices) - syn);
     end
 
 
-    ErrorFile = fopen([outdir,sprintf('ModelErrorInfo_%d.txt',fbin)],'w');
-    fprintf(ErrorFile,'%.2f - %.2f Hz\n',fLi,fHi);
-    for f = 1:nLam
-        fprintf(ErrorFile,'%.3f  %.2f \n',Lambdas(f),ErrorLamBin(f));
-    end
-    fclose(ErrorFile);
+%     ErrorFile = fopen([outdir,sprintf('ModelErrorInfo_%d.txt',fbin)],'w');
+%     fprintf(ErrorFile,'%.2f - %.2f Hz\n',fLi,fHi);
+%     for f = 1:nLam
+%         fprintf(ErrorFile,'%.3f  %.2f \n',Lambdas(f),ErrorLamBin(f));
+%     end
+%     fclose(ErrorFile);
 
 
     %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
