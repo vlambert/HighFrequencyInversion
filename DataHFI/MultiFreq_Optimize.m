@@ -14,7 +14,7 @@ tic
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Okhotsk_6u/';
+outdir = 'Okhotsk_6u_USArray/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -89,7 +89,7 @@ nsta = size(StaLoc,1);
 % Set up coherent array divisions
 DivPop = [0;size(USArray,1)];%size(EUArray,1);size(AUArray,1)];
 
-DivColor = ['k';'r';'b'];%'m','g'];%,'y']
+DivColor = ['k'];%'r';'b'];%'m','g'];%,'y']
 clear -regexp ^US ;%^AU ^EU ^pass
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -102,7 +102,7 @@ clear -regexp ^US ;%^AU ^EU ^pass
 %xmin = -10; xmax = 20;
 %ymin = -10; ymax = 20;
 
-dx = 0.2; % lat and lon
+dx = 0.1; % lat and lon
 dy = dx;
 xmin = -1; xmax = 1;
 ymin = -1; ymax = 1;
@@ -119,33 +119,33 @@ cy = reshape(repmat(y_bp',nxbp,1),ns,1);
 xycenters = [cx,cy];
 
 %% plot station map (Figure 1)
-h1=figure(1);clf;
-set(h1,'visible','off','Position',[1 scrsz(4)*2/3 530 650]);
-hold on;
-az0=linspace(0,2*pi,100);
-di = 0:95;
-plot(EVLO+25*sin(az0),EVLA+25*cos(az0),'-k');
-plot(EVLO+95*sin(az0),EVLA+95*cos(az0),'-r');
-
-for d=1:nDiv
-    popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
-    plot(EVLO+x_st(popu)/deg2km,EVLA+y_st(popu)/deg2km,'k^','MarkerEdgeColor',DivColor(d),...
-        'MarkerFaceColor','w');
-end
-plot(EVLO,EVLA,'rp');
-axis equal; box on;
-text(EVLO+0.15e4,EVLA+-0.1e4,'25^{o}','FontSize',14)
-text(EVLO+0.75e4,EVLA+-0.8e4,'95^{o}','FontSize',14)
-set(gca,'FontSize',14)
-set(gca,'color','none')
-title('Station Distribution')
-saveas(h1,[outdir,'StationMap'],'png')
-saveas(h1,[outdir,'StationMap'],'fig')
+% h1=figure(1);clf;
+% set(h1,'visible','off','Position',[1 scrsz(4)*2/3 530 650]);
+% hold on;
+% az0=linspace(0,2*pi,100);
+% di = 0:95;
+% plot(EVLO+25*sin(az0),EVLA+25*cos(az0),'-k');
+% plot(EVLO+95*sin(az0),EVLA+95*cos(az0),'-r');
+% 
+% for d=1:nDiv
+%     popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
+%     plot(EVLO+x_st(popu)/deg2km,EVLA+y_st(popu)/deg2km,'k^','MarkerEdgeColor',DivColor(d),...
+%         'MarkerFaceColor','w');
+% end
+% plot(EVLO,EVLA,'rp');
+% axis equal; box on;
+% text(EVLO+0.15e4,EVLA+-0.1e4,'25^{o}','FontSize',14)
+% text(EVLO+0.75e4,EVLA+-0.8e4,'95^{o}','FontSize',14)
+% set(gca,'FontSize',14)
+% set(gca,'color','none')
+% title('Station Distribution')
+% saveas(h1,[outdir,'StationMap'],'png')
+% saveas(h1,[outdir,'StationMap'],'fig')
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                        Set Up Data                     %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-nsmooth=10;  % smoothing for plotting (period / sampling)   
+%nsmooth=10;  % smoothing for plotting (period / sampling)   
 nt=length(t);
 
 % Load travel times
@@ -188,29 +188,29 @@ clear W
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Plot waveform versus azimuth               %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-h2=figure(2);clf
-for i = 1:nDiv
-    popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
-    set(h2,'visible','off','Position',[97 304 1096 394]);
-    subplot(4,nDiv,i:nDiv:3*nDiv);
-    h=pcolor(t,az(popu)/pi,Data(popu,:));
-    ylim([min(az(popu)/pi) max(az(popu)/pi)])
-    set(h,'EdgeColor','none');
-    ylabel('station azimuth \theta (\pi)')
-    set(gca,'FontSize',14)
-
-    % square stack of waveforms, smoothed
-    subplot(4,nDiv,3*nDiv+i);
-    event1=sum(Data(popu,:),1);
-    event1=smooth(event1.^2,nsmooth); % square stacking smoothing
-    event1=event1./max(event1);
-    plot(t,event1);
-    xlabel('time (s)');
-    xlim([t(1) t(end)])
-    set(gca,'FontSize',14)
-    saveas(h2,[outdir,'AzimuthalDistribution'],'png')
-    saveas(h2,[outdir,'AzimuthalDistribution'],'fig')
-end
+% h2=figure(2);clf
+% for i = 1:nDiv
+%     popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
+%     set(h2,'visible','off','Position',[97 304 1096 394]);
+%     subplot(4,nDiv,i:nDiv:3*nDiv);
+%     h=pcolor(t,az(popu)/pi,Data(popu,:));
+%     ylim([min(az(popu)/pi) max(az(popu)/pi)])
+%     set(h,'EdgeColor','none');
+%     ylabel('station azimuth \theta (\pi)')
+%     set(gca,'FontSize',14)
+% 
+%     % square stack of waveforms, smoothed
+%     subplot(4,nDiv,3*nDiv+i);
+%     event1=sum(Data(popu,:),1);
+%     event1=smooth(event1.^2,nsmooth); % square stacking smoothing
+%     event1=event1./max(event1);
+%     plot(t,event1);
+%     xlabel('time (s)');
+%     xlim([t(1) t(end)])
+%     set(gca,'FontSize',14)
+%     saveas(h2,[outdir,'AzimuthalDistribution'],'png')
+%     saveas(h2,[outdir,'AzimuthalDistribution'],'fig')
+% end
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %        Filter and Convert to Frequency Domain          %
@@ -226,8 +226,8 @@ for st=1:nsta
 end
 
 % Time window (currently full window)
-tw = find(t >= min(t),1,'first'); 
-ntw = length(t);
+% tw = find(t >= min(t),1,'first'); 
+% ntw = length(t);
 
 % Fourier transform the data
 nfft = 2^nextpow2(length(t));
@@ -240,8 +240,6 @@ df = fspace0(2)-fspace0(1);
 fL = 0.5;
 fH = 2.0;
 ffilt = find(fspace0 >= fL & fspace0 <=fH);
-fspace = fspace0(ffilt);
-nf = length(fspace);
 
 binpop = 20;
 overflow = binpop - mod(length(ffilt),binpop);
@@ -254,7 +252,7 @@ nfbin = nf/binpop;
 
 DataSpec = zeros(nsta,nf);
 for i = 1:nsta
-    spec = fft(DataFilt(i,tw:end),nfft);
+    spec = fft(DataFilt(i,:),nfft);
     spec = spec(1:nfft/2+1);
     DataSpec(i,:) = spec(ffilt);
 end
@@ -272,8 +270,8 @@ ncomb = ns*nDiv;          % total number of model parameters
 pl = sqrt(nDiv)*ones(1,ns);  
 
 % Sparsity parameter
-%Orders = [-4;-3;-2;-1;0;1;2];  %Km -2 to 2
-Orders = [-1;0;1;2;3;4;5]; 
+Orders = [-3;-2;-1;0;1;2;3];  %Km -2 to 2
+%Orders = [-1;0;1;2;3;4;5]; 
 factors = [1;5];
 Lambdas = zeros(length(Orders)*length(factors),1);
 for i1 = 1:length(Orders)
@@ -381,9 +379,9 @@ toc
             fsource = ((fi-1)*ncomb+1:fi*ncomb);
             mout(fi,:) = moutTemp(la,fsource); 
             for d = 1:nDiv
-               for s = 1:ns 
-                  mm(la,findex,d,s) = mout(fi,(d-1)*ns+s);
-               end
+               %for s = 1:ns 
+                  mm(la,fi,d,:) = mout(fi,((d-1)*ns+1):(d*ns));
+               %end
             end
 %             syn(:,findex) = syntmp(fpop,la);
         end
