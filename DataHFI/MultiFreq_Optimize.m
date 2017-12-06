@@ -272,7 +272,8 @@ ncomb = ns*nDiv;          % total number of model parameters
 pl = sqrt(nDiv)*ones(1,ns);  
 
 % Sparsity parameter
-Orders = [-4;-3;-2;-1;0;1;2];
+%Orders = [-4;-3;-2;-1;0;1;2];  %Km -2 to 2
+Orders = [-1;0;1;2;3;4;5]; 
 factors = [1;5];
 Lambdas = zeros(length(Orders)*length(factors),1);
 for i1 = 1:length(Orders)
