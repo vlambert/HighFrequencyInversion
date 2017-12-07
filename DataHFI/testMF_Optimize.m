@@ -14,7 +14,7 @@ tic
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Okhotsk_5u4_USarray/';
+outdir = 'Okhotsk_5u12_filter_normwind_USarray/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -48,10 +48,12 @@ EVLA = US.info.EVLA;
 EVDP = US.info.EVDP;
 dt = US.info.dt;
 t = US.info.tspan(1:end-1);
+windo = find(t >=t(1) & t<=t(end));
+t = t(windo);
 USXCF = US.corr.XCFullu;
 USXCW = US.corr.XCu;
 passUS = find(USXCW >= corrCrit);
-USData = US.finalUData(passUS,:);
+USData = US.finalUData(passUS,windo);
 USArray = [US.sta.Lat_i(passUS,:), US.sta.Lon_i(passUS,:)];
 
 
@@ -158,6 +160,20 @@ nt=length(t);
 % Load travel times
 P_trav = load('P_trav_607_taup.txt');    % TauP with IASP91 velocity model
 
+tij = zeros(ns,nsta);
+tij2 = zeros(ns,nsta);
+dtij = zeros(ns,nsta);
+for si = 1:ns
+      x_xi = xycenters(si,1);
+      y_xi = xycenters(si,2);
+      for st = 1:nsta
+      tp = tauptime('mod','iasp91','dep',EVDP,'EV',[EVLA+y_xi/deg2km,EVLO+x_xi/deg2km],'ST',[StaLoc(st,1),StaLoc(st,2)],'PH','P'); 
+      tij2(si,st) = tp.time;
+      dtij(si,st) = tt(st) - tij2(si,st);
+      end
+end
+
+%%
 % Window function
 W = tukeywin(nt,0.2); % 0.5, 0.75, 1
 W = W./max(W);
@@ -166,21 +182,16 @@ W = W./max(W);
 dist = R/deg2km; 
 t0j1 =  tt;
 
+MnormWind = 2;
+normWind = find(t >=-1 & t <= MnormWind);
 for jj=1:nsta
-    Data(jj,:)=W'.*Data(jj,:)./max(abs(Data(jj,:)));
+    Data(jj,:)=W'.*Data(jj,:)./max(Data(jj,normWind));
 end
+Data = Data./(max(max(Data)));
 
-tij = zeros(ns,nsta);
-tij2 = zeros(ns,nsta);
-for si = 1:ns
-      x_xi = xycenters(si,1);
-      y_xi = xycenters(si,2);
-      for st = 1:nsta
-      tp = tauptime('mod','iasp91','dep',EVDP,'EV',[EVLA+y_xi/deg2km,EVLO+x_xi/deg2km],'ST',[StaLoc(st,1),StaLoc(st,2)],'PH','P'); 
-      tij2(si,st) = tp.time;
-      end
-end
-
+%%
+figure(5);clf;
+plot(t,Data)
 
 tij = tij2;
 % for d = 1:nDiv
@@ -228,8 +239,8 @@ end
 %        Filter and Convert to Frequency Domain          %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 fnyq = 1/dt/2;      % Nyquist frequency
-lowF  = 0.2;       % Hz
-highF = 2.0;        % Hz
+lowF  = 0.4;       % Hz
+highF = 1.6;        % Hz
 
 DataFilt = Data;
 [B,A] = butter(4,[lowF highF]./fnyq);
@@ -249,8 +260,8 @@ nftot = length(fspace0);      % number of frequencies
 
 % Bin the frequencies
 df = fspace0(2)-fspace0(1);
-fL = 0.5;
-fH = 2.0;
+fL = 0.2;
+fH = 1.8;
 ffilt = find(fspace0 >= fL & fspace0 <=fH);
 fspace = fspace0(ffilt);
 nf = length(fspace);
@@ -321,8 +332,8 @@ for fbin = 1:nfbin
     u = reshape(DataSpec(:,findices),np*binpop,1);
 
     % Create kernels for each source location and station
-    K1 = zeros(np,ns);
-    Kf = zeros(np,ncomb);
+    K1 = zeros(binpop*np,binpop*ns);
+    Kf = zeros(binpop*np,binpop*ncomb);
 
     for d = 1:nDiv
         % find the station indices within the subarray
@@ -334,10 +345,12 @@ for fbin = 1:nfbin
                 f0i = f0s(fi);
                 K1((fi-1)*np+popu,(fi-1)*ns+i) = (exp(2i*pi*f0i*(t0j1(popu) - tij(i,popu)')));
                 Kf((fi-1)*np+popu,(fi-1)*nDiv*ns+(d-1)*ns+i) = (exp(2i*pi*f0i*(t0j1(popu) - tij(i,popu)')));
+                %Kf((fi-1)*np+popu,(fi-1)*nDiv*ns+(d-1)*ns+i) = (exp(2i*pi*f0i*(dtij(i,popu)')));
             end
         end
     end
    
+
     parfor f = 1:nLam       % parallelized over frequency    
         % Perform the Inversion
         lambda = Lambdas(f);                         % Sparsity prior weight      
