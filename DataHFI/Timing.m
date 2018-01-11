@@ -15,7 +15,7 @@ clear all;close all;
 %inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_multiF_LamSearch_repeater_disjoint/';
 %inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Nepal/Gorka_2/';
 %inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Okhotsk/Okhotsk_3u/';
-inDir = 'Okhotsk_5u_USarray/';
+inDir = 'Okhotsk_5u2_USarray/';
 outDir = [inDir,'Figures/'];
 compDir = [inDir,'Comparison/'];
 if ~exist(outDir,'dir')

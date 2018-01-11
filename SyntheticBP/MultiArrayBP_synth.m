@@ -11,7 +11,7 @@ close all;
 tic;
 addpath('../');
 scrsz=get(0,'ScreenSize');
-outdir = 'WorldArray/3array_noise_moresubs/';
+outdir = 'WorldArray/diffG_multiF_repeater_disjoint/';
 frameDir = 'Frames/';
 movieDir = 'movies/';
 if ~exist(outdir,'dir')
@@ -32,9 +32,12 @@ EVLO=153.281;
 EVDP=607;
 
 %subevent locations and times
-x_ev=[0 5 10 50 60  80    100];% 20 25 ]./2; % km
-y_ev=[0 15 40 50 54 60    70];% 10 10 ]./2; % km
-t_ev=[0 5 14 19 25 31   38 ];%10 12];     % seconds
+% x_ev=[0 5 10 50 60  80    100];% 20 25 ]./2; % km
+% y_ev=[0 15 40 50 54 60    70];% 10 10 ]./2; % km
+% t_ev=[0 5 14 19 25 31   38 ];%10 12];     % seconds
+x_ev=[0 10 50 80 100 0 51];
+y_ev=[0 40 50 60 70 1 50];
+t_ev=[0 5 14 19 25 15   30 ];
 m_ev=[1 1  1   1 1 1 1];%  1  1];     % moment normalized to event 1
 n_ev=length(x_ev);
 
@@ -130,7 +133,7 @@ saveas(gcf,[outdir,'StationMap'],'png')
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %              Make Synthetic Seismograms                %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-fc = 2;                  % dominant frequency (Hz)
+fc = 1;                  % dominant frequency (Hz)
 dt = 0.05;               % sampling
 nsmooth=round(1/fc/dt);  % smoothing for plotting (period / sampling)
 t=-5:dt:(max(t_ev)+10);   
@@ -165,7 +168,7 @@ Data=zeros(nsta, nt);
 % Distance and travel time from hypocenter to each station 
 dist = sqrt( ( x_ev(1) - x_st ).^2 + ( y_ev(1) - y_st ).^2 )/111.2; 
 t0j = t_ev(1)+interp1(P_trav(:,1),P_trav(:,2),dist,'linear','extrap'); 
-SNR = 30;
+SNR = 20;
 w = zeros(nsta,1);
 w(:,1) = 1/DivPop(2);
 w(Div2,1) = 1/DivPop(3);
@@ -303,7 +306,7 @@ delete([frameDir,'Frames*.png']);
 %mov(1:nt+1)=struct('cdata',[],'colormap',[]);
 %set(gca,'nextplot','replacechildren');
 %set(gcf,'color','w');
-for ii=1:(nt+1)
+for ii=(1):(nt+1)
     tmp=squeeze(BP(:,:,ii));
     tmp2=squeeze(BPs(:,:,ii));
     MakeFrame(tmp,tmp2,x_bp,y_bp,dx,dy,t,x_ev,y_ev,frameDir,outdir,ii,nt)

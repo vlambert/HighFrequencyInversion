@@ -5,9 +5,24 @@
 %                                  %
 %       Valere Lambert, 2017       %
 % % % % % % % % % % % % % % % % % %%
-
+clear all;
+close all;
 scrsz=get(0,'ScreenSize');
 
+outdir = 'Okhotsk_comb/';
+frameDir = [outdir,'Frames/'];
+movieDir = [outdir,'movies/'];
+
+if ~exist(outdir,'dir')
+    mkdir(outdir)
+end
+if ~exist(frameDir,'dir')
+    mkdir(frameDir)
+end
+
+if ~exist(movieDir,'dir')
+    mkdir(movieDir)
+end
 %% % % % % % % % % % % % % % % % % % % % % % % % % % 
 %             Get station and event info           %      
 % StaLat : Station latitude                        %
@@ -26,16 +41,19 @@ scrsz=get(0,'ScreenSize');
 %          EVLO     : hypocenter longitude         %
 %                                                  %
 % % % % % % % % % % % % % % % % % % % % % % % % % %%
-load('StationDataEUArray177.mat');
+load('OkhotskData_AU.mat');
 EVLO = info.EVLO;
 EVLA = info.EVLA;
 EVDP = info.EVDP;
-nsta = info.nsta;
 dt = info.dt;
-nt = info.nt;
 duration = info.duration;
-tspan = info.tspan;
+tspan = info.tspan(1:end-1);
 
+corrCrit = 0.7;
+XCF = corr.XCFullu;
+XCW = corr.XCu;
+pass = find(XCW >= corrCrit);
+Data = finalUData(pass,:);
 % 2D flat spatial grid for potential sources
 % dx=5;
 % dy=dx;
@@ -52,6 +70,12 @@ y_bp = (51:dlat:57)-EVLA;
 nxbp = length(x_bp);
 nybp = length(y_bp);
 nxy = length(x_bp)*length(y_bp);
+
+az = sta.az_i(pass);
+rr = sta.rr_i(pass);
+tt = sta.tt_i(pass);
+nsta = length(az);
+nt = length(tspan);
 
 
 % Station location wrt hypocenter
@@ -73,11 +97,11 @@ AZweight=ones(size(AZweight));
 %% Filter the data
 lowF  = 0.5; % Hz
 highF = 2.0; % Hz
-DataFilt = Data_pass;
+DataFilt = Data;
 fnyq = 1/dt/2;
 [B,A] = butter(4,[lowF highF]./fnyq);
 for st=1:nsta
-    DataFilt(st,:) = filter(B,A,Data_pass(st,:));
+    DataFilt(st,:) = filter(B,A,Data(st,:));
 end
 
 %% plot station map
@@ -134,7 +158,7 @@ subplot(1,2,2)
 plot(tspan,DataFilt(I,:));
 xlabel('Time (s)');
 % Load travel time
-P_trav = load('P_trav_609_taup.txt');
+P_trav = load('P_trav_607_taup.txt');
 
 %% Back-projection
 tic
@@ -159,8 +183,8 @@ for ii=1:nxbp
         for kk=1:nsta
             tmpData(kk,:)=interp1(source_t - trav(kk),DataFilt(kk,:),source_t,'linear',0);
         end
-        BP2(ii,jj,:) = smooth((sum(tmpData,1).^2).^(0.5),nsmooth);
-        BP4(ii,jj,:) = smooth((sum(tmpData,1).^4).^(0.25),nsmooth);
+        BP2(ii,jj,:) = smooth((sum(tmpData,1)),nsmooth);
+        BP4(ii,jj,:) = smooth((sum(tmpData,1).^2).^(0.5),nsmooth);
      end
 end
 %%
@@ -248,7 +272,7 @@ end
 % end
 
 %%
-delete('~/Seismo_Work/Back_Projection/Okhotsk2013/Frames/Frames*.png');
+delete([frameDir,'Frames*.png']);
 Figure=figure(5);clf
 %set(Figure,'visible','off')
 set(gcf,'Position',[1 1 scrsz(3)/2 scrsz(4)/3]);
@@ -262,7 +286,7 @@ for ii=1:ntV+1
     tmp=squeeze(BPM2(:,:,ii));
     h=pcolor(EVLO+x_bp-dlon/2,EVLA+y_bp-dlat/2,tmp');
     hold on; plot(EVLO,EVLA,'rp','MarkerSize',15);
-    plot(EVLO+xpeak2(1:ii),EVLA+ypeak2(1:ii),'rs');
+    %plot(EVLO+xpeak2(1:ii),EVLA+ypeak2(1:ii),'rs');
    
     set(h,'EdgeColor','none');
     axis square;
@@ -277,16 +301,16 @@ for ii=1:ntV+1
     end
     mov(ii)=getframe(gcf);
     img2=getframe(gcf);
-    imwrite(img2.cdata, [sprintf('~/Seismo_Work/Back_Projection/Okhotsk2013/Frames/Frames%d', ii), '.png']);
+    imwrite(img2.cdata, [frameDir,sprintf('Frames%d', ii), '.png']);
     %pause(0.01);
 end
 
 %%
-writerObj = VideoWriter('~/Seismo_Work/Back_Projection/Okhotsk2013/BP_EUarray_xc_2order.avi');
+writerObj = VideoWriter([outdir,'BP_AUarray_xc_2order.avi']);
 writerObj.FrameRate = 15;
 open(writerObj);
 for K = 1:ntV+1
-    filename = sprintf('~/Seismo_Work/Back_Projection/Okhotsk2013/Frames/Frames%d.png', K);
+    filename = [frameDir,sprintf('Frames%d.png', K)];
     thisimage = imread(filename);
     writeVideo(writerObj, thisimage);
     %pause(0.01)
