@@ -14,7 +14,7 @@ tic
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Okhotsk_5u12_filter_normwind_USarray/';
+outdir = 'Okhotsk_5u16_Pl_XC_filter_normwind_USarray/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -52,7 +52,7 @@ windo = find(t >=t(1) & t<=t(end));
 t = t(windo);
 USXCF = US.corr.XCFullu;
 USXCW = US.corr.XCu;
-passUS = find(USXCW >= corrCrit);
+passUS = find(USXCF >= corrCrit);
 USData = US.finalUData(passUS,windo);
 USArray = [US.sta.Lat_i(passUS,:), US.sta.Lon_i(passUS,:)];
 
@@ -266,7 +266,7 @@ ffilt = find(fspace0 >= fL & fspace0 <=fH);
 fspace = fspace0(ffilt);
 nf = length(fspace);
 
-binpop = 20;
+		      binpop = 20;
 overflow = binpop - mod(length(ffilt),binpop);
 if overflow ~= 0
    ffilt = ffilt(1):(ffilt(end)+overflow); 
@@ -292,7 +292,7 @@ end
 % (currently same as total stations)
 np = sum(DivPop);         % number of stations in inversion population
 ncomb = ns*nDiv;          % total number of model parameters
-pl = sqrt(nDiv)*ones(1,ns);  
+pl = sqrt(nDiv*binpop)*ones(1,ns);  
 
 % Sparsity parameter
 Orders = [-4;-3;-2;-1;0;1;2;3;4];

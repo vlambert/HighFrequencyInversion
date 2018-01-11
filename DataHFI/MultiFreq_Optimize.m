@@ -14,7 +14,7 @@ tic
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Okhotsk_6u_USArray/';
+outdir = 'Okhotsk_9_USArray/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -50,7 +50,7 @@ dt = US.info.dt;
 t = US.info.tspan(1:end-1);
 USXCF = US.corr.XCFullu;
 USXCW = US.corr.XCu;
-passUS = find(USXCW >= corrCrit);
+passUS = find(USXCF >= corrCrit);
 USData = US.finalUData(passUS,:);
 USArray = [US.sta.Lat_i(passUS,:), US.sta.Lon_i(passUS,:)];
 
@@ -104,8 +104,8 @@ clear -regexp ^US ;%^AU ^EU ^pass
 
 dx = 0.1; % lat and lon
 dy = dx;
-xmin = -1; xmax = 1;
-ymin = -1; ymax = 1;
+xmin = -0.5; xmax = 0.5;
+ymin = -2; ymax = 1;
 
 
 x_bp = (xmin:dx:xmax)*deg2km;
@@ -158,10 +158,13 @@ W = W./max(W);
 % Distance and travel time from hypocenter to each station 
 dist = R/deg2km; 
 
+MnormWind = 2;
+normWind = find(t>=-1 & t <=MnormWind);
 for jj=1:nsta
-    Data(jj,:)=W'.*Data(jj,:)./max(abs(Data(jj,:)));
+    Data(jj,:)=W'.*Data(jj,:)./max(Data(jj,normWind));
 end
 
+		    Data = Data./max(max(Data));
 dtij = zeros(ns,nsta);
 for si = 1:ns
       x_xi = xycenters(si,1);
@@ -216,8 +219,8 @@ clear W
 %        Filter and Convert to Frequency Domain          %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 fnyq = 1/dt/2;      % Nyquist frequency
-lowF  = 0.2;       % Hz
-highF = 2.3;        % Hz
+lowF  = 0.4;       % Hz
+highF = 1.6;        % Hz
 
 DataFilt = Data;
 [B,A] = butter(4,[lowF highF]./fnyq);
@@ -237,8 +240,8 @@ nftot = length(fspace0);      % number of frequencies
 
 % Bin the frequencies
 df = fspace0(2)-fspace0(1);
-fL = 0.5;
-fH = 2.0;
+fL = 0.2;
+fH = 1.8;
 ffilt = find(fspace0 >= fL & fspace0 <=fH);
 
 binpop = 20;
@@ -267,10 +270,10 @@ end
 % (currently same as total stations)
 np = sum(DivPop);         % number of stations in inversion population
 ncomb = ns*nDiv;          % total number of model parameters
-pl = sqrt(nDiv)*ones(1,ns);  
+pl = sqrt(nDiv*binpop)*ones(1,ns);  
 
 % Sparsity parameter
-Orders = [-3;-2;-1;0;1;2;3];  %Km -2 to 2
+Orders = [-3;-2;-1;0;1;2];  %Km -2 to 2
 %Orders = [-1;0;1;2;3;4;5]; 
 factors = [1;5];
 Lambdas = zeros(length(Orders)*length(factors),1);
@@ -281,7 +284,7 @@ for i1 = 1:length(Orders)
 end
 nLam = length(Lambdas);
 
-cvx_solver_settings('cvx_slvitr',2);
+%cvx_solver_settings('cvx_slvitr',2);
 %cvx_solver_settings -clear
 tic
 for fbin = 1:nfbin
@@ -308,8 +311,8 @@ for fbin = 1:nfbin
     u = reshape(DataSpec(:,findices),np*binpop,1);
 
     % Create kernels for each source location and station
-    K1 = zeros(np,ns);
-    Kf = zeros(np,ncomb);
+    K1 = zeros(binpop*np,binpop*ns);
+    Kf = zeros(binpop*np,binpop*ncomb);
 
     for d = 1:nDiv
         % find the station indices within the subarray
