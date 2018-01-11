@@ -181,15 +181,15 @@ for i = 1:nDiv
     %ModGF(i,:) = myconvolve(GF(i,:)',Gaus(i,:)',t);
 end
 
-figure(1);clf;
-for i = 1:nDiv
-    subplot(3,2,i*2-1)
-    plot(t,GF(i,:))
-    title(sprintf('Div %d',i))
-    subplot(3,2,2*i)
-    plot(t,ModGF(i,:))
-    title(sprintf('Div %d',i))
-end
+% figure(1);clf;
+% for i = 1:nDiv
+%     subplot(3,2,i*2-1)
+%     plot(t,GF(i,:))
+%     title(sprintf('Div %d',i))
+%     subplot(3,2,2*i)
+%     plot(t,ModGF(i,:))
+%     title(sprintf('Div %d',i))
+% end
 
 % Make synthetics wrt first arrival
 Data=zeros(nsta, nt);
@@ -214,13 +214,13 @@ for jj=1:nsta
 end
 
 
-figure(2);clf;
-for i = 1:nDiv
-    subplot(3,1,i)
-    count = sum(DivPop(1:i));
-    plot(t,Data(count+2,:))
-    title(sprintf('Div %d',i))
-end
+% figure(2);clf;
+% for i = 1:nDiv
+%     subplot(3,1,i)
+%     count = sum(DivPop(1:i));
+%     plot(t,Data(count+2,:))
+%     title(sprintf('Div %d',i))
+% end
 
 dtij = zeros(ns,nsta);
 for si = 1:ns
@@ -236,7 +236,7 @@ end
 %             Plot waveform versus azimuth               %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
 h2=figure(2);clf
-%set(h2,'visible','off','Position',[scrsz(3)/4 scrsz(4)/2 530 650]);
+set(h2,'visible','off','Position',[scrsz(3)/4 scrsz(4)/2 530 650]);
 subplot(5,1,1:4);
 h=pcolor(t,th_st/pi,Data);
 ylim([0 2])
@@ -351,7 +351,7 @@ for fbin = 1:nfbin
     f0s = fspace(findices); % frequency
 
     % Fill data vectors for frequency
-    u = reshape(DataSpec(Div,findices),np*binpop,1)
+    u = reshape(DataSpec(Div,findices),np*binpop,1);
 
     % Create kernels for each source location and station
     K1 = zeros(np,ns);
