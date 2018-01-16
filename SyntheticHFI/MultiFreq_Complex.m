@@ -247,7 +247,7 @@ for si = 1:ns
       dtij(si,:) = t0j(:)-tij;
 end
 
-return
+
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Plot waveform versus azimuth               %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
@@ -367,11 +367,11 @@ for fbin = 1:nfbin
     f0s = fspace(findices); % frequency
 
     % Fill data vectors for frequency
-    u = reshape(DataSpec(Div,findices),np*binpop,1);
+    u = reshape(DataSpec(:,findices),np*binpop,1);
 
     % Create kernels for each source location and station
-    K1 = zeros(np,ns);
-    Kf = zeros(np,ncomb);
+    K1 = zeros(binpop*np,binpop*ns);
+    Kf = zeros(binpop*np,binpop*ncomb);
 
     for d = 1:nDiv
         % find the station indices within the subarray
@@ -409,7 +409,7 @@ for fbin = 1:nfbin
             tmpspecPower = zeros(ns,nDiv);
             for d = 1:nDiv
                 popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
-                Ktemp = K1((fi-1)*np+Div(popu),((fi-1)*ns+1):fi*ns);
+                Ktemp = K1((fi-1)*np+popu,((fi-1)*ns+1):fi*ns);
                 for s = 1:ns
                     mmtmp(s,d) = mtmp((d-1)*ns+s);
                     tmp = Ktemp(:,s)*mmtmp(s,d);
