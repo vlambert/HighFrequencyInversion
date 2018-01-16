@@ -285,7 +285,7 @@ for st=1:nsta
 end
 
 % Fourier transform the data
-nfft = 2^nextpow2(length(t(tw:end)));
+nfft = 2^nextpow2(length(t));
 fspace0 = 1/dt * (0:(nfft/2))/nfft;
 nftot = length(fspace0);      % number of frequencies
 %ffilt = find(fspace0 >= lowF & fspace0 <= highF);
@@ -465,6 +465,9 @@ toc
     info.y_ev = y_ev;
     info.t_ev = t_ev;
     info.m_ev = m_ev;
+    info.EVLA = EVLA;
+    info.EVLO = EVLO;
+    info.EVDP = EVDP;
     info.x = x_bp;
     info.y = y_bp;
     info.nx = nxbp;
@@ -475,7 +478,6 @@ toc
     info.binpop = binpop;
     info.fspace = fspace;
     info.t = t;
-    info.tw = tw;
     info.nDiv = nDiv;
     info.Div = Div;
     info.DivPop = DivPop;
