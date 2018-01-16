@@ -418,7 +418,7 @@ for fbin = 1:nfbin
             end
             tmpspecPowerF = tmpspecPowerF + tmpspecPower;
         end
-        specPowerF(f,:,:) = tmpspecPowerF;
+        specPowerF(:,:,f) = tmpspecPowerF;
 
     %%
     end
