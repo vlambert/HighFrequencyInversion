@@ -405,8 +405,8 @@ for fbin = 1:nfbin
             mtmp = m(fsource);
 
             % Calculate power and synthetics at each frequency from the subevents
-            mmtmp = zeros(nDiv,ns);
-            tmpspecPower = zeros(nDiv,ns);
+            mmtmp = zeros(ns,nDiv);
+            tmpspecPower = zeros(ns,nDiv);
             for d = 1:nDiv
                 popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
                 Ktemp = K1((fi-1)*np+Div(popu),((fi-1)*ns+1):fi*ns);
