@@ -326,7 +326,7 @@ for i = 1:nDiv
     gwtemp = gw(1:nfft/2+1);
     GFw(i,:) = gwtemp(ffilt);
 end
-clear -regexp Data DataFilt trav P_trav
+clear Data DataFilt trav P_trav
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Prepare and Perform Inversion              %
 %              for each Discrete Frequency               %
