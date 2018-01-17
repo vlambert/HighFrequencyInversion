@@ -295,13 +295,14 @@ df = fspace0(2)-fspace0(1);
 fL = 0.5;
 fH = 1.5;
 ffilt = find(fspace0 >= fL & fspace0 <=fH);
-fspace = fspace0(ffilt);
-nf = length(fspace);
+dffilt = 2;
+ffilt = ffilt(1:dffilt:end);
+df = dffilt*df;
 
 binpop = ceil(0.1/df);
 overflow = binpop - mod(length(ffilt),binpop);
 if overflow ~= 0
-   ffilt = ffilt(1):(ffilt(end)+overflow); 
+   ffilt = ffilt(1):dffilt:(ffilt(end)+overflow); 
 end
 fspace = fspace0(ffilt);
 nf = length(fspace); % number of frequencies
