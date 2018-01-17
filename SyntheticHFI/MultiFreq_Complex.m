@@ -112,7 +112,7 @@ Div = (1:nsta)';
 DivPop = [0;size(USArray,1);size(EUArray,1);size(AUArray,1)];
 
 DivColor = ['k';'r';'b'];%'m','g'];%,'y']
-          
+          return
 %% plot station map (Figure 1)
 h1=figure(1);clf;
 set(h1,'visible','off','Position',[1 scrsz(4)*2/3 530 650]);
@@ -335,7 +335,7 @@ pl = sqrt(nDiv*binpop)*ones(1,ns);  % non-standardized
 %pl = sqrt(np*binpop)*ones(1,ns);  % standardized
 
 % Sparsity parameter
-Orders = [-3;-2;-1;0;1;2;3];
+Orders = [-2;-1;0;1;2];
 factors = [1;5];
 Lambdas = zeros(length(Orders)*length(factors),1);
 for i1 = 1:length(Orders)
