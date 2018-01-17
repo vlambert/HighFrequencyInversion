@@ -112,7 +112,7 @@ Div = (1:nsta)';
 DivPop = [0;size(USArray,1);size(EUArray,1);size(AUArray,1)];
 
 DivColor = ['k';'r';'b'];%'m','g'];%,'y']
-          return
+          
 %% plot station map (Figure 1)
 h1=figure(1);clf;
 set(h1,'visible','off','Position',[1 scrsz(4)*2/3 530 650]);
