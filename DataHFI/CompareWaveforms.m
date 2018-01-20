@@ -1,16 +1,10 @@
 clear all;close all;
 
-nfiles = 16;
-%inDir = 'Okhotsk_5u16_Pl_XC_filter_normwind_USarray/';
-inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/Okhotsk/Okhotsk_9_USArray/';
-%inDir = 'Okhotsk_5u9c_EUarray/';
-outDir = [inDir,'DirectivityPlots/'];
-compDir = [inDir,'Comparison/'];
+nfiles = 11;
+inDir='/Users/valerelambert/Seismo_Work/Back_Projection/Results/testOkhotsk/Okhotsk_test_fewsubs2/';
+outDir = [inDir,'Comparison/'];
 if ~exist(outDir,'dir')
     mkdir(outDir)
-end
-if ~exist(compDir,'dir')
-    mkdir(compDir)
 end
 
 corrCrit = 0.7;
@@ -109,15 +103,14 @@ end
 
 %%
 
-lowF  = 0.4; % Hz
-highF = 1.6; % Hz
+lowF  = rec.info.lowF; % Hz
+highF = rec.info.highF; % Hz
 fnyq  = 1/(2*dt); 
 [B,A] = butter(4,[lowF highF]./fnyq);
 DataF = zeros(size(Data(stkeep,:)));
 uDataF = DataF;
 for st = 1:length(stkeep)
     DataF(st,:) = filter(B,A,Data(stkeep(st),:));
-
 end
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
@@ -167,53 +160,7 @@ for li = 1:length(Lambdas)
     end
 end
 
-% ErrorT = zeros(length(Lambdas),1);
-% ErrorF = zeros(length(Lambdas),1);
-% 
-% for ij = 1:length(Lambdas)
-%     
-%     ErrorT(ij) = 1/sqrt(nsta) * norm(DataI - iSyn(:,:,ij));
-%     ErrorF(ij) = 1/sqrt(nsta) * norm(DataSpec2 - syn(:,:,ij));
-%     
-%     figure(6);clf;
-%     set(gcf,'Position',[1 1 1140 nDiv*190])
-%     for i = 1:nDiv
-%         popu = ((sum(DivPop(1:i))+1):(sum(DivPop(1:i+1))));
-% 
-%         % Data spectra u(omega)
-%         subplot(nDiv,4,(i-1)*4+1)
-%         plot(fspace,real(DataSpec(popu,:)));
-%         if i == 1
-%             title('Data u (\omega)')
-%         end
-%         ylabel(sprintf('u (t), Subarray %d',i))
-% 
-%         % Data time series u(t)
-%         subplot(nDiv,4,(i-1)*4+2)
-%         plot(t,DataI(popu,:));
-%         if i == 1
-%             title('Data u (t)')
-%         end
-%         xlim([t(1) t(end)])
-% 
-%         % Synthetic spectra u(omega)
-%         ylabel(sprintf('Subarray %d',i))
-%         subplot(nDiv,4,(i-1)*4+3)
-%         plot(fspace,real(syn(popu,fentryD,ij)));  
-%         if i == 1
-%             title(['Inv u (\omega), \sigma = ',sprintf('%.3f',ErrorF(ij))])
-%         end
-% 
-%         % Synthetic time series u(t)
-%         subplot(nDiv,4,(i-1)*4+4)
-%         plot(t,iSyn(popu,:,ij));  
-%         if i == 1
-%             title(['Inv u (t), \lambda = ',sprintf('%.4f',Lambdas(ij)),', \sigma = ',sprintf('%.3f',ErrorT(ij))])
-%         end
-%         xlim([t(1) t(end)])
-%     end
-%     saveas(gcf,[compDir,strrep(sprintf('Waveforms_Lam%.4f',Lambdas(ij)),'.','_')],'png')
-% end
+
 %%
 ampD = 10;
 ampS = 10;
@@ -259,19 +206,3 @@ tshift = 0;
     xlim([-10 50])
     saveas(h,[outDir,'ComparisonData'],'png')
     
-
-%%
-return
-for li = 14:28%1:length(Lambdas)
-    for th = 12:15%1:length(thetan)
-        h=figure(1);clf
-        plot(t,repmat(direct(:,th),1,length(t))+0.05*DataF,'k'); hold on
-        plot(t,repmat(direct(:,th),1,length(t))+0.05*iSyn(stkeep,:,li),'r'); 
-        xlim([-5 50])
-        grid on
-        title(sprintf('AZ = %.2f;  Lam = %.4f',thetan(th)*180/pi,Lambdas(li)));
-        xlabel('Time relative to first arrival');
-        ylabel('Directivity Parameter')
-        saveas(h,[outDir,strrep(sprintf('Directivity_%.2f_Lam%.4f',thetan(th)*180/pi,Lambdas(li)),'.','_')],'png')
-    end
-end

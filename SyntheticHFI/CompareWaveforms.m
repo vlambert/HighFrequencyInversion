@@ -1,7 +1,7 @@
 clear all;close all;
 
-nfiles = 21;
-inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_multiF_LamSearch_repeater_disjoint_complex/';
+nfiles = 9;
+inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_complex_continuous/'
 outDir = [inDir,'ComparisonPlots/'];
 compDir = [inDir,'Comparison/'];
 if ~exist(outDir,'dir')

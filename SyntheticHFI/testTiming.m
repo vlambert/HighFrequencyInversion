@@ -9,8 +9,8 @@ clear all;close all;
 % info.Div = Div;
 % info.DivPop = DivPop;
 % save([outdir,'InversionOutput.mat'],'DataSpec','syntmp','specPowerF','mm','GF','Lambdas','fspace','info','-v7.3');
+inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_complex_continuous/';
 
-inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_multiF_LamSearch_repeater_disjoint_complex/';
 outDir = [inDir,'Figures/'];
 compDir = [inDir,'Comparison/'];
 if ~exist(outDir,'dir')
@@ -24,7 +24,7 @@ end
 %            Plot Data and Model to Compare              %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%  
 fuse = [];
-nfiles = 21;
+nfiles = 9;
 
 EVLA=54.874;
 EVLO=153.281;
@@ -68,7 +68,6 @@ deg2km = 111.2;
 % cx = cx*deg2km;
 % cy = cy*deg2km;
 % xycenters = [cx,cy];
-% ns = length(cx);
 %%
     for lambin = 1:length(Lambdas)
 
@@ -89,8 +88,8 @@ deg2km = 111.2;
            %colorspec=parula(npairs);
            pcolor(x_bp-dx/2,y_bp-dy/2,grid1)
            axis equal
-           %xlim([-50 50])
-           %ylim([-100 50])
+           xlim([min(x_bp) max(x_bp)])
+           ylim([min(y_bp) max(y_bp)])
            %scatter(xycenters(:,1),xycenters(:,2),500,grid1,'filled')
            colorbar;
            title(sprintf('Subarray %d Power',id))
@@ -100,8 +99,8 @@ deg2km = 111.2;
         grid1 = reshape(sum(specPowerF(:,:,lambin),2),nybp,nxbp);
         %grid2 = sum(specPowerF(:,:,lambin),2);
         axis equal
-        xlim([-50 50])
-        ylim([-100 50])
+        xlim([min(x_bp) max(x_bp)])
+        ylim([min(y_bp) max(y_bp)])
         %scatter(xycenters(:,1),xycenters(:,2),500,grid2,'filled')
         pcolor(x_bp-dx/2,y_bp-dy/2,grid1)
         colorbar
@@ -110,18 +109,9 @@ deg2km = 111.2;
         Lambdas(lambin);
         saveas(h1,[outDir,sprintf('SourceLoc_Freq%d_Lambin%d',i,lambin)],'png')
 
-
-%         CumSpecPower = sum(specPowerF(:,:,lambin),2);
-%         factor = 0.10;
-%         subevents = find(CumSpecPower > factor * max(CumSpecPower));
-%         %subevents = (1:ns);
-%         nSu = length(subevents);
-
-        %cf = round(median(fspace));
-        fentries = find(ismembertol(fullF,f0s,1e-10));
-        %mmtmp = zeros(nf,nDiv,nSu);
     end
-
+    
+    fentries = find(ismembertol(fullF,f0s,1e-10));
     if i ==1
        mmtmpAll = zeros(nf,nDiv,ns,length(Lambdas)); 
        CumSpecPowerF = zeros(nfiles,ns,length(Lambdas));
@@ -130,36 +120,12 @@ deg2km = 111.2;
     %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
     %            Plot Source Time Functions (?)              %
     % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-    %CumSpecPowerF(i,:,:,:) = specPowerF;
     for lambin = 1:length(Lambdas)
-
-    %         h2=figure(2);clf;
-    %         set(gcf,'Position',[-2554 620 915 748]);
-    % 
-    %         hold on
          CumSpecPowerF(i,:,lambin) = sum(1./repmat(DivPop(2:end)',ns,1).*specPowerF(:,:,lambin),2);
          for si = 1:ns
               for di = 1:nDiv
-    %             mmtmp(fentries,di,si) = squeeze(mm(lambin,:,di,subevents(si)));
-                 %mmtmpAll(fentries,di,si,lambin) = squeeze(mm(lambin,:,di,subevents(si)));
                  mmtmpAll(fentries,di,si,lambin) = squeeze(mm(lambin,:,di,si));
-                 
-    %             mmt = (ifft(mmtmp(:,di,si),nt));
-    %             [u,d]=envelope(real(mmt));
-    %             [peaks,locs,w,p] = findpeaks(u,t);
-    %             subplot(nSu,1,si)
-    %             plot(t,mmt,t,u)
-    %             tmy = ylim;
-    %             for j = 1:length(peaks)
-    %                 text(locs(j),1.1*tmy(2),sprintf('%.2f',locs(j)));
-    %             end
-             end
-    %         subplot(nSu,1,1)
-    %         title([sprintf('Frequencies %.2f - %.2f Hz',min(f0s),max(f0s)),'\lambda = ',sprintf('%.2f',Lambdas(lambin))])
-    %         tmx = xlim;
-    %         tmy = ylim;
-    %         set(get(gca,'title'),'Position',[0.4*(tmx(2)-tmx(1)) 1.3*tmy(2) 1.00011])
-    %         saveas(h2,[outDir,sprintf('SourceTim_Freq%d_subarray%d_lambin%d',i,di,lambin)],'png')
+              end
          end
     end
 end
@@ -199,7 +165,7 @@ for lambin = 1:length(Lambdas)
 
     
 end
-return
+
 %%
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %            Plot Joint Source Time Functions (?)        %
