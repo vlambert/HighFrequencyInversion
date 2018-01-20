@@ -14,7 +14,7 @@ tic
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Okhotsk_9_USArray/';
+outdir = 'Okhotsk_USArray/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
