@@ -14,7 +14,7 @@ tic
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'Okhotsk_5u16_Pl_XC_filter_normwind_USarray/';
+outdir = 'Okhotsk_test_fewsubs2/'
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -240,7 +240,7 @@ nfbin = nf/binpop;
 
 DataSpec = zeros(nsta,nf);
 for i = 1:nsta
-    spec = fft(DataFilt(i,tw:end),nfft);
+    spec = fft(DataFilt(i,:),nfft);
     spec = spec(1:nfft/2+1);
     DataSpec(i,:) = spec(ffilt);
 end
@@ -268,8 +268,8 @@ for i1 = 1:length(Orders)
 end
 nLam = length(Lambdas);
 
-cvx_solver_settings('cvx_slvitr',2);
-%cvx_solver_settings -clear
+%cvx_solver_settings('cvx_slvitr',2);
+cvx_solver_settings -clear
 tic
 for fbin = 1:nfbin
     disp(fbin)
