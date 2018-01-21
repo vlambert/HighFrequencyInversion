@@ -218,7 +218,7 @@ fL = 0.5;
 fH = 1.5;
 ffilt = find(fspace0 >= fL & fspace0 <=fH);
 
-binpop = 20;
+binpop = 10;
 overflow = binpop - mod(length(ffilt),binpop);
 if overflow ~= 0
    ffilt = ffilt(1):(ffilt(end)+overflow); 
