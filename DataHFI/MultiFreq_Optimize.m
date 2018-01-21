@@ -233,8 +233,8 @@ for i = 1:nsta
     spec = spec(1:nfft/2+1);
     DataSpec(i,:) = spec(ffilt);
 end
-
-clear Data spec DataFilt
+return
+clear Data spec DataFilt fspace0
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Prepare and Perform Inversion              %
 %              for each Discrete Frequency               %
@@ -265,11 +265,8 @@ for fbin = 1:nfbin
     disp(fbin)
     % Output models
     moutTemp = zeros(nLam,ncomb*binpop);
-    mout = zeros(binpop,ncomb);
+    %mout = zeros(binpop,ncomb);
     mm   = zeros(nLam,binpop,nDiv,ns);
-
-    % Displacement vector for entire population
-    uom = zeros(np*binpop,1);
 
     % Synthetic spectra 
     syntmp = zeros(np*binpop,nLam);
@@ -309,7 +306,7 @@ for fbin = 1:nfbin
         moutTemp(f,:) = m
         for fi = 1:binpop
             fsource = ((fi-1)*ncomb+1:fi*ncomb);
-            mtmp = m(fsource);
+            %mtmp = m(fsource);
 
             % Calculate spectral power density at each frequency from the subevents
             mmtmp = zeros(ns,nDiv);
@@ -318,7 +315,8 @@ for fbin = 1:nfbin
                 popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
                 Ktemp = K1((fi-1)*np+popu,((fi-1)*ns+1):fi*ns);
                 for s = 1:ns
-                    mmtmp(s,d) = mtmp((d-1)*ns+s)';
+                    %mmtmp(s,d) = mtmp((d-1)*ns+s)';
+                    mmtmp(s,d) = m((fi-1)*ncomb+(d-1)*ns+s)'
                     tmp = Ktemp(:,s)*mmtmp(s,d);
                     tmpspecPower(s,d) =  sum(real(tmp).*real(tmp));
                 end
@@ -331,16 +329,17 @@ for fbin = 1:nfbin
     %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
     %               Reorganize model array                   %
     % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
-        for la = 1:nLam
-            for fi = 1:binpop
-                fsource = ((fi-1)*ncomb+1:fi*ncomb);
-                mout(fi,:) = moutTemp(la,fsource); 
-                for d = 1:nDiv
-                      mm(la,fi,d,:) = mout(fi,((d-1)*ns+1):(d*ns));
-                end
+    for la = 1:nLam
+        for fi = 1:binpop
+            %fsource = ((fi-1)*ncomb+1:fi*ncomb);
+            %mout(fi,:) = moutTemp(la,fsource); 
+            for d = 1:nDiv
+                  rang = ((fi-1)*ncomb+(d-1)*ns+1: (fi-1)*ncomb+d*ns)
+                  %mm(la,fi,d,:) = mout(fi,((d-1)*ns+1):(d*ns));
+                  mm(la,fi,d,:) = moutTemp(la,rang);
             end
         end
-
+    end
 
     %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
     %                       Save Info                        %
