@@ -85,7 +85,7 @@ nDiv = 2;
 nsta = size(StaLoc,1);
 
 % Set up coherent array divisions
-DivPop = [0;size(USArray,1);size(EUArray,1);size(AUArray,1)];
+DivPop = [0;size(USArray,1);size(EUArray,1)];%size(AUArray,1)];
 
 DivColor = ['k';'r'];%'b'];%'m','g'];%,'y']
 clear -regexp ^US ^EU ^pass;
