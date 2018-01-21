@@ -63,32 +63,32 @@ EUData = EU.finalUData(passEU,:);
 EUArray = [EU.sta.Lat_i(passEU,:), EU.sta.Lon_i(passEU,:)];
 % 
 % % AU
-AU=load('OkhotskData2_AU.mat');
-AUXCF = AU.corr.XCFullu;
-AUXCW = AU.corr.XCu;
-passAU = find(AUXCW >= corrCrit);
-AUData = AU.finalUData(passAU,:);
-AUArray = [AU.sta.Lat_i(passAU,:), AU.sta.Lon_i(passAU,:)];
+% AU=load('OkhotskData2_AU.mat');
+% AUXCF = AU.corr.XCFullu;
+% AUXCW = AU.corr.XCu;
+% passAU = find(AUXCW >= corrCrit);
+% AUData = AU.finalUData(passAU,:);
+% AUArray = [AU.sta.Lat_i(passAU,:), AU.sta.Lon_i(passAU,:)];
 % 
-StaLoc = [USArray;EUArray;AUArray];
-Data = [USData;EUData;AUData];
-R = [US.sta.rr_i(passUS); EU.sta.rr_i(passEU); AU.sta.rr_i(passAU)];
-az =[US.sta.az_i(passUS); EU.sta.az_i(passEU); AU.sta.az_i(passAU)];
-tt =[US.sta.tt_i(passUS); EU.sta.tt_i(passEU); AU.sta.tt_i(passAU)];
+StaLoc = [USArray;EUArray];%AUArray];
+Data = [USData;EUData];%AUData];
+R = [US.sta.rr_i(passUS); EU.sta.rr_i(passEU)];% AU.sta.rr_i(passAU)];
+az =[US.sta.az_i(passUS); EU.sta.az_i(passEU)];% AU.sta.az_i(passAU)];
+tt =[US.sta.tt_i(passUS); EU.sta.tt_i(passEU)];% AU.sta.tt_i(passAU)];
 
 az = az/180*pi;
 R = deg2km*R;
 x_st = R.*sin(az);
 y_st = R.*cos(az);
 
-nDiv = 3;
+nDiv = 2;
 nsta = size(StaLoc,1);
 
 % Set up coherent array divisions
 DivPop = [0;size(USArray,1);size(EUArray,1);size(AUArray,1)];
 
-DivColor = ['k';'r';'b'];%'m','g'];%,'y']
-clear -regexp ^US ^AU ^EU ^pass;
+DivColor = ['k';'r'];%'b'];%'m','g'];%,'y']
+clear -regexp ^US ^EU ^pass;
 
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %        Construct 2D grid of potential sources          %
