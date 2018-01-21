@@ -233,7 +233,7 @@ for i = 1:nsta
     spec = spec(1:nfft/2+1);
     DataSpec(i,:) = spec(ffilt);
 end
-return
+
 clear Data spec DataFilt fspace0
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %             Prepare and Perform Inversion              %
