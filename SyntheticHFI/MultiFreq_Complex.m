@@ -14,7 +14,7 @@ close all;
 addpath('../')
 
 scrsz=get(0,'ScreenSize');
-outdir = 'MultiArray/diffG_complex_continuous/';
+outdir = 'MultiArray/diffG_complex_continuous_sameAmp/';
 if ~exist(outdir,'dir')
     mkdir(outdir)
 end
@@ -30,7 +30,8 @@ EVDP=607;
 x_ev=[0 1  3  8  10 21 33 41 50 58 69 80 90 100 0  4  40 51];
 y_ev=[0 13 21 30 40 41 40 49 50 53 57 60 62 70  1  11 49 50];
 t_ev=[0 2  3  4  5  8  9  11 14 15 17 19 22 25  15 17 28 30 ];
-m_ev=[2 1  1  1  2  1  1  1  2  1  1  2  1  2   1  1  1  1];
+%m_ev=[2 1  1  1  2  1  1  1  2  1  1  2  1  2   1  1  1  1];
+m_ev=[1 1  1  1  1  1  1  1  1  1  1  1  1  1   1  1  1  1];
 % x_ev=[0  10  50  80  100 0   51];
 % y_ev=[0  40  50  60  70  1   50];
 % t_ev=[0  5   14  19  25  15  30 ];
