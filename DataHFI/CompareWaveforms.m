@@ -1,7 +1,7 @@
 clear all;close all;
 
 nfiles = 11;
-inDir='/Users/valerelambert/Seismo_Work/Back_Projection/Results/testOkhotsk/Okhotsk_test_fewsubs2/';
+inDir  = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/testOkhotsk/Okhotsk_USArray/';
 outDir = [inDir,'Comparison/'];
 if ~exist(outDir,'dir')
     mkdir(outDir)

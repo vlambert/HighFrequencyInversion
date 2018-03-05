@@ -1,7 +1,7 @@
 
 close all; clear all;
 
-inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_complex_continuous/';
+inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/TryingToBreak/diffG_complex_continuous_sameAmp/';
 outDir = [inDir,'Figures/'];
 if ~exist(outDir,'dir')
     mkdir(outDir)
@@ -51,12 +51,12 @@ for i = 1:nbins
     he = sprintf('%.2f - %.2f',fspace(findices(1)),fspace(findices(end)));
     leg = [leg; he];
     figure(1);
-    plot(misfit,mp,'LineWidth',2);hold on
+    loglog(misfit,mp,'LineWidth',2);hold on
 
     h2=figure(2);clf;
-    plot(misfit,mp,'LineWidth',2);hold on
+    loglog(misfit,mp,'LineWidth',2);hold on
     for li = 1:length(Lambdas)
-        text(misfit(li),mp(li),['\lambda: ',sprintf('%.1f',Lambdas(li))])
+        text(misfit(li),mp(li),['\lambda: ',sprintf('%.2f',Lambdas(li))])
     end
     text(0.8*max(misfit),0.9*max(mp),['\lambda_{opt}: ', sprintf('%.3f',Lambdas(minL))])
     set(gca,'FontSize',14);

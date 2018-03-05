@@ -1,5 +1,5 @@
 close all; clear all;
-inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/testOkhotsk/Okhotsk_test_fewsubs/';
+inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/testOkhotsk/Okhotsk_USArray/';
 outDir = [inDir,'Figures/'];
 if ~exist(outDir,'dir')
     mkdir(outDir)

@@ -9,8 +9,8 @@ clear all;close all;
 % info.Div = Div;
 % info.DivPop = DivPop;
 % save([outdir,'InversionOutput.mat'],'DataSpec','syntmp','specPowerF','mm','GF','Lambdas','fspace','info','-v7.3');
-inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_complex_continuous/';
 
+inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/MultiArray/diffG_complex_continuous_sameAmp/';
 outDir = [inDir,'Figures/'];
 compDir = [inDir,'Comparison/'];
 if ~exist(outDir,'dir')
