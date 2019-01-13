@@ -9,7 +9,7 @@ clear all;
 close all;
 scrsz=get(0,'ScreenSize');
 
-outdir = 'Okhotsk_comb/';
+outdir = 'Fiji_AS/';
 frameDir = [outdir,'Frames/'];
 movieDir = [outdir,'movies/'];
 
@@ -41,7 +41,7 @@ end
 %          EVLO     : hypocenter longitude         %
 %                                                  %
 % % % % % % % % % % % % % % % % % % % % % % % % % %%
-load('OkhotskData_AU.mat');
+load('FijiData_AS.mat');
 EVLO = info.EVLO;
 EVLA = info.EVLA;
 EVDP = info.EVDP;
@@ -54,6 +54,7 @@ XCF = corr.XCFullu;
 XCW = corr.XCu;
 pass = find(XCW >= corrCrit);
 Data = finalUData(pass,:);
+
 % 2D flat spatial grid for potential sources
 % dx=5;
 % dy=dx;
@@ -65,8 +66,8 @@ Data = finalUData(pass,:);
 
 dlat=0.1;
 dlon=0.1;
-x_bp = (148:dlon:159)-EVLO;
-y_bp = (51:dlat:57)-EVLA;
+x_bp = (-182:dlon:-175)-EVLO;
+y_bp = (-22:dlat:-15)-EVLA;
 nxbp = length(x_bp);
 nybp = length(y_bp);
 nxy = length(x_bp)*length(y_bp);
@@ -123,6 +124,8 @@ w = ones(nsta,1);
 w=w./sum(w);
 w2=w*ones(1,nt);
 nsmooth = round(1/((highF+lowF)/2)/dt); % period / sampling
+%nsmooth = 10/dt;
+
 
 figure(3);clf
 set(gcf,'Position',[scrsz(3)/4 scrsz(4)/2 scrsz(3)/4 scrsz(4)/2]);
@@ -283,7 +286,7 @@ set(gcf,'color','w');
 
 for ii=1:ntV+1
     %subplot(4,2,[1 3 5]);hold off;
-    tmp=squeeze(BPM2(:,:,ii));
+    tmp=squeeze(BPM4(:,:,ii));
     h=pcolor(EVLO+x_bp-dlon/2,EVLA+y_bp-dlat/2,tmp');
     hold on; plot(EVLO,EVLA,'rp','MarkerSize',15);
     %plot(EVLO+xpeak2(1:ii),EVLA+ypeak2(1:ii),'rs');
@@ -306,7 +309,7 @@ for ii=1:ntV+1
 end
 
 %%
-writerObj = VideoWriter([outdir,'BP_AUarray_xc_2order.avi']);
+writerObj = VideoWriter([outdir,'BP_AUarray_xc_Lin_10s.avi']);
 writerObj.FrameRate = 15;
 open(writerObj);
 for K = 1:ntV+1
@@ -329,12 +332,13 @@ for i=2:nran2
    scatter(EVLO+xpeak2(r2st+i-1),EVLA+ypeak2(r2st+i-1),[],colorspec(i,:));
 end
 
-title('2nd-order stacking')
+title('Linear stacking')
 % xlim([EVLO+min(x_bp)-dlon/2 EVLO+max(x_bp)-dlon/2])
 % ylim([EVLA+min(y_bp)-dlat/2 EVLA+max(y_bp)-dlat/2])
 axis square
-xlim([150 156]);
-ylim([53 56]);
+grid on; box on;
+xlim([min(x_bp)+EVLO-1 max(x_bp)+EVLO+1]);
+ylim([min(y_bp)+EVLA-1 max(y_bp)+EVLA+1]);
 xlabel('Longitude');
 ylabel('Latitude');
 colormap(colorspec)
@@ -354,12 +358,13 @@ scatter(EVLO+xpeak4(r4st),EVLA+ypeak4(r4st),[],colorspec4(1,:)); hold on
 for i=2:nran4
    scatter(EVLO+xpeak4(r4st+i-1),EVLA+ypeak4(r4st+i-1),[],colorspec4(i,:));
 end
-title('4th-order stacking');
+title('2nd-order stacking');
 % xlim([EVLO+min(x_bp)-dlon/2 EVLO+max(x_bp)-dlon/2])
 % ylim([EVLA+min(y_bp)-dlat/2 EVLA+max(y_bp)-dlat/2])
 axis square
-xlim([150 156]);
-ylim([53 56]);
+grid on; box on;
+xlim([min(x_bp)-1+EVLO max(x_bp)+1+EVLO]);
+ylim([min(y_bp)-1+EVLA max(y_bp)+1+EVLA]);
 xlabel('Longitude');
 ylabel('Latitude');
 colormap(colorspec4)

@@ -1,6 +1,5 @@
 clear all;close all;
-
-inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/testOkhotsk/Okhotsk_test_fewsubs/';
+inDir = '/Users/valerelambert/Seismo_Work/Back_Projection/Results/testOkhotsk/Okhotsk_test_fewsubs_Global_nolasso/';
 outDir = [inDir,'Figures/'];
 compDir = [inDir,'Comparison/'];
 if ~exist(outDir,'dir')
@@ -167,9 +166,9 @@ for lambin = 1:length(Lambdas)
     CumSpecPower(:,lambin) = sum(CumSpecPowerF(:,:,lambin),1);
     subevents = find(CumSpecPower(:,lambin) >= factor * max(CumSpecPower(:,lambin)));
     nSu = length(subevents);
-%     if nSu/ns > 0.1
-%         continue
-%     end
+    if nSu/ns > 0.1
+        continue
+    end
     for di = 1:nDiv
         h3=figure(3);clf;
         set(gcf,'Position',[-2554 620 915 748]);
