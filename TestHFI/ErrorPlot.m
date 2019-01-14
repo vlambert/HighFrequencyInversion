@@ -10,7 +10,7 @@ h1=figure(1);clf;
 leg = [];
 minX = 10000;
 maxX = 0;
-nbins = 6;
+nbins = 18;
 
 for i = 1:nbins
     fid2 = [inDir,sprintf('InversionOutput_%d.mat',i)];

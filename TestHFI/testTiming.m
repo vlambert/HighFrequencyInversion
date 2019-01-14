@@ -23,11 +23,11 @@ end
 %            Plot Data and Model to Compare              %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%  
 fuse = [];
-nfiles = 6;
+nfiles = 18;
 
 EVLA=54.874;
 EVLO=153.281;
-EVDP=607;
+EVDP=40;
 %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
 %                    Plot Subevents                      %
 % % % % % % % % % % % % % % % % % % % % % % % % % % % % %% 
@@ -61,54 +61,54 @@ dy = y_bp(2)-y_bp(1);
 % EVLA = info.EVLA;
 deg2km = 111.2;
 
-% For specified locations (Zhan Okhotsk 2013)
-% cx = [153.28; 153.35; 153.47; 153.51;  153.65] - EVLO;
-% cy = [54.88;  54.90;  54.82; 54.48;     54.15] - EVLA;
-% cx = cx*deg2km;
-% cy = cy*deg2km;
-% xycenters = [cx,cy];
+% % % % % For specified locations (Zhan Okhotsk 2013)
+% % % % % cx = [153.28; 153.35; 153.47; 153.51;  153.65] - EVLO;
+% % % % % cy = [54.88;  54.90;  54.82; 54.48;     54.15] - EVLA;
+% % % % % cx = cx*deg2km;
+% % % % % cy = cy*deg2km;
+% % % % % xycenters = [cx,cy];
 %%
-    for lambin = 1:length(Lambdas)
-
-        h1=figure(1);clf;
-        hold on;
-        qy = min(3,nDiv+1);
-        if qy < 3
-            qx = 1;
-        else
-            qx = ceil((nDiv+1)/3);
-        end
-        set(gcf,'Position',[1 1 qy*425 qx*280])
-    
-        for id = 1:nDiv
-           subplot(qx,qy,id)
-           grid1 = reshape(specPowerF(:,id,lambin),nybp,nxbp);
-           %grid1 = specPowerF(:,id,lambin);
-           %colorspec=parula(npairs);
-           pcolor(x_bp-dx/2,y_bp-dy/2,grid1)
-           axis equal
-           xlim([min(x_bp) max(x_bp)])
-           ylim([min(y_bp) max(y_bp)])
-           %scatter(xycenters(:,1),xycenters(:,2),500,grid1,'filled')
-           colorbar;
-           title(sprintf('Subarray %d Power',id))
-    
-        end
-        subplot(qx,qy,nDiv+1)
-        grid1 = reshape(sum(specPowerF(:,:,lambin),2),nybp,nxbp);
-        %grid2 = sum(specPowerF(:,:,lambin),2);
-        axis equal
-        xlim([min(x_bp) max(x_bp)])
-        ylim([min(y_bp) max(y_bp)])
-        %scatter(xycenters(:,1),xycenters(:,2),500,grid2,'filled')
-        pcolor(x_bp-dx/2,y_bp-dy/2,grid1)
-        colorbar
-        title([sprintf('Combined Power: %.2f - %.2f Hz',min(f0s),max(f0s)),'\lambda = ',sprintf('%.4f',Lambdas(lambin))])
-    
-        Lambdas(lambin);
-        saveas(h1,[outDir,sprintf('SourceLoc_Freq%d_Lambin%d',i,lambin)],'png')
-
-    end
+%     for lambin = 1:length(Lambdas)
+% 
+%         h1=figure(1);clf;
+%         hold on;
+%         qy = min(3,nDiv+1);
+%         if qy < 3
+%             qx = 1;
+%         else
+%             qx = ceil((nDiv+1)/3);
+%         end
+%         set(gcf,'Position',[1 1 qy*425 qx*280])
+%     
+%         for id = 1:nDiv
+%            subplot(qx,qy,id)
+%            grid1 = reshape(specPowerF(:,id,lambin),nybp,nxbp);
+%            %grid1 = specPowerF(:,id,lambin);
+%            %colorspec=parula(npairs);
+%            pcolor(x_bp-dx/2,y_bp-dy/2,grid1)
+%            axis equal
+%            xlim([min(x_bp) max(x_bp)])
+%            ylim([min(y_bp) max(y_bp)])
+%            %scatter(xycenters(:,1),xycenters(:,2),500,grid1,'filled')
+%            colorbar;
+%            title(sprintf('Subarray %d Power',id))
+%     
+%         end
+%         subplot(qx,qy,nDiv+1)
+%         grid1 = reshape(sum(specPowerF(:,:,lambin),2),nybp,nxbp);
+%         %grid2 = sum(specPowerF(:,:,lambin),2);
+%         axis equal
+%         xlim([min(x_bp) max(x_bp)])
+%         ylim([min(y_bp) max(y_bp)])
+%         %scatter(xycenters(:,1),xycenters(:,2),500,grid2,'filled')
+%         pcolor(x_bp-dx/2,y_bp-dy/2,grid1)
+%         colorbar
+%         title([sprintf('Combined Power: %.2f - %.2f Hz',min(f0s),max(f0s)),'\lambda = ',sprintf('%.4f',Lambdas(lambin))])
+%     
+%         Lambdas(lambin);
+%         saveas(h1,[outDir,sprintf('SourceLoc_Freq%d_Lambin%d',i,lambin)],'png')
+% 
+%     end
     
     fentries = find(ismembertol(fullF,f0s,1e-10));
     if i ==1
@@ -117,7 +117,7 @@ deg2km = 111.2;
     end
 
     %% % % % % % % % % % % % % % % % % % % % % % % % % % % % %
-    %            Plot Source Time Functions (?)              %
+    %            Plot Source Time Functions                  %
     % % % % % % % % % % % % % % % % % % % % % % % % % % % % %%
     for lambin = 1:length(Lambdas)
          CumSpecPowerF(i,:,lambin) = sum(1./repmat(DivPop(2:end)',ns,1).*specPowerF(:,:,lambin),2);
@@ -140,8 +140,8 @@ for lambin = 1:length(Lambdas)
     subplot(5,3,lambin)
     grid1 = reshape(CumSpecPower(:,lambin),nybp,nxbp);
     axis equal
-    xlim([-50 50])
-    ylim([-100 50])
+   xlim([min(x_bp) max(x_bp)])
+   ylim([min(y_bp) max(y_bp)])
    
     %scatter(xycenters(:,1),xycenters(:,2),500,grid2,'filled')
     pcolor(x_bp-dx/2,y_bp-dy/2,grid1)
@@ -154,10 +154,9 @@ for lambin = 1:length(Lambdas)
     CumSpecPower2(subevents,lambin) = CumSpecPower(subevents,lambin);
     subplot(5,3,lambin)
     grid2 = reshape(CumSpecPower2(:,lambin),nybp,nxbp);
-    
-        axis equal
-    xlim([-50 50])
-    ylim([-100 50])
+    axis equal
+    xlim([min(x_bp) max(x_bp)])
+    ylim([min(y_bp) max(y_bp)])
     pcolor(x_bp-dx/2,y_bp-dy/2,grid2)
     title(sprintf('Lambda = %.4f',Lambdas(lambin)))
     colorbar
@@ -203,10 +202,3 @@ for lambin = 1:length(Lambdas)
         saveas(h3,[outDir,sprintf('CombSourceTime_Sub%d_Lambin%d',di,lambin)],'png')
     end
 end
-
-%%
-% tstmmt1 = (ifft(mmtmpAll(:,di,1),nt));
-% [ACF, lags, bounds] = autocorr(tstmmt1,[],2); % inspect autocorrelation 95 % confidence
-% 
-% tstmmt2 = (ifft(mmtmpAll(:,di,2),nt));
-% [ACF2, lags2, bounds2] = autocorr(tstmmt2,[],2); % inspect autocorrelation 95 % confidence

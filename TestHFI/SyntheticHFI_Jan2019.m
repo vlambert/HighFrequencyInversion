@@ -338,7 +338,7 @@ tic
 for fbin = 1:nfbin
     % Output models
     moutTemp = zeros(nLam,ncomb*binpop);
-%     mout = zeros(binpop,ncomb);
+%    mout = zeros(binpop,ncomb);
     mm   = zeros(nLam,binpop,nDiv,ns);
 
     % Displacement vector for entire population
@@ -382,7 +382,7 @@ for fbin = 1:nfbin
         moutTemp(f,:) = m
         for fi = 1:binpop
             fsource = ((fi-1)*ncomb+1:fi*ncomb);
-%             mtmp = m(fsource);
+            mtmp = m(fsource);
 
             % Calculate power and synthetics at each frequency from the subevents
             mmtmp = zeros(ns,nDiv);
@@ -391,7 +391,7 @@ for fbin = 1:nfbin
                 popu = ((sum(DivPop(1:d))+1):(sum(DivPop(1:d+1))));
                 Ktemp = K1((fi-1)*np+popu,((fi-1)*ns+1):fi*ns);
                 for s = 1:ns
-%                     mmtmp(s,d) = mtmp((d-1)*ns+s);
+                    mmtmp(s,d) = mtmp((d-1)*ns+s);
                     tmp = Ktemp(:,s)*mmtmp(s,d);
                     tmpspecPower(s,d) =  sum(real(tmp).*real(tmp));
                 end
@@ -412,7 +412,7 @@ toc
 %             mout(fi,:) = moutTemp(la,fsource); 
             for d = 1:nDiv
                 rang = ((fi-1)*ncomb+(d-1)*ns+1: (fi-1)*ncomb+d*ns);
-%                   mm(la,fi,d,:) = mout(fi,((d-1)*ns+1):(d*ns));
+%                  mm(la,fi,d,:) = mout(fi,((d-1)*ns+1):(d*ns));
                 mm(la,fi,d,:) = moutTemp(la,rang);
             end
         end
