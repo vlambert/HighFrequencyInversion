@@ -83,19 +83,6 @@ for i = 1:Nrtot
     Data(i,:) = awgn(Data(i,:),SNR);
     Data2(i,:) = awgn(Data2(i,:),SNR);
 end
-%% Filter data around central frequency
-lowF  = 3.0; % Hz
-highF = 7.0; % Hz
-DataFilt = Data;
-DataFilt2 = Data2;
-dt = t(2)-t(1);
-fnyq = 1/dt/2;
-[B,A] = butter(4,[lowF highF]./fnyq);
-for st=1:Nrtot
-    DataFilt(st,:) = filtfilt(B,A,Data(st,:));
-    DataFilt2(st,:) = filtfilt(B,A,Data2(st,:));
-    
-end
 
 %%
 
@@ -174,64 +161,6 @@ xlabel('Time (s)')
 
 %%
 
-figure(1);clf;
-set(gcf,'Position',[360 1 754 697])
-subplot(3,2,1)
-plot(Xs,P,'r','LineWidth',1.); hold on;
-plot(Xs,P2,'k','LineWidth',1);
-xlabel('Source location')
-title('Amplitude')
-
-subplot(3,2,2)
-plot(XrL(1:Nr(1)),Xrx(1:Nr(1)), 'or'); hold on;
-plot(XrL((Nr(1)+1):Nrtot),Xrx((Nr(1)+1):Nrtot),'ok');
-plot(zeros(size(Xs)),Xs,'bp')
-xlim([0 max(XrL)+2])
-ylim([min(Xrx)-2 max(Xrx)+2])
-xlabel('Transverse Distance')
-
-subplot(3,2,3)
-title('Data with Smoothed Amplitude')
-hold on;
-for kk=1:Nr
-    plot(t,DataFilt(kk,:)+2*kk,'k');
-end
-box on;
-ylim([-1 2*Nr(1)+5])
-xlabel('Time (s)')
-
-subplot(3,2,4)
-title('Data with Smoothed Amplitude')
-hold on;
-for kk=Nr(1)+1:Nrtot
-    plot(t,DataFilt(kk,:)+2*(kk-Nr(1)),'k');
-end
-box on;
-ylim([-1 2*Nr(1)+5])
-xlabel('Time (s)')
-
-subplot(3,2,5)
-title('Data with Random Amplitude')
-hold on;
-for kk=1:Nr(1)
-    plot(t,DataFilt2(kk,:)+2*kk,'k');
-end
-box on;
-ylim([-1 2*Nr(1)+5])
-xlabel('Time (s)')
-
-subplot(3,2,6)
-title('Data with Random Amplitude')
-hold on;
-for kk=Nr(1)+1:Nrtot
-    plot(t,DataFilt2(kk,:)+2*(kk-Nr(1)),'k');
-end
-box on;
-ylim([-1 2*Nr(1)+5])
-xlabel('Time (s)')
-
-%%
-
 Data = Data2;
 %% inverse for phi of 2nd and 3rd subevent
 
@@ -265,14 +194,10 @@ for i2=1:Ns
         for j2=1:Nphi
             for j3=1:Nphi
                 newphi=[0 PHI(j2) PHI(j3)];
-                %Pred1=forward(Nrtot,nt,Nsubi, Pin, Xs, OTi, Xrx, XrL, c, Ta, newphi, sti,w,t);
                 Pred1=forward(Nr(1),nt,Nsubi, Pin, Xs, OTi, Xrx(sub1), XrL(sub1), c, Ta(sub1), newphi, sti,w,t);
-                %Pred2=forward(Nrtot,nt,Nsubi, Pin, Xs, OTi, Xrx, XrL, c, Ta, newphi, sti,w,t);
                 Pred2=forward(Nr(2),nt,Nsubi, Pin, Xs, OTi, Xrx(sub2), XrL(sub2), c, Ta(sub2), newphi, sti,w,t);
                 misfit1 = norm(myData1(:)-Pred1(:));
                 misfit2 = norm(myData2(:)-Pred2(:));
-                %misfit1(j2,j3)=norm(Data(:)-Pred(:));
-                %if(misfit(j2,j3)<minmisfit)
                 if(misfit1 < minmisfit1)
                     J21=j2;
                     J31=j3;
@@ -287,7 +212,7 @@ for i2=1:Ns
                 % different phases
                 for j2c=1:Nphi
                     for j3c=Nphi
-                        newphi2=[0 PHI(j2) PHI(j3)];
+                        newphi2=[0 PHI(j2c) PHI(j3c)];
                         Pred2c=forward(Nr(2),nt,Nsubi, Pin, Xs, OTi, Xrx(sub2), XrL(sub2), c, Ta(sub2), newphi2, sti,w,t);
                         misfit2c = norm(myData2(:)-Pred2c(:));
                         misfitc = sqrt(misfit1.^2 + misfit2c.^2);
@@ -587,7 +512,7 @@ set(gca,'FontSize',14)
 
 
 %%
-save('JointResultAmpRand')
+save('JointResultAmpRandfixJ')
 %%
 
 
