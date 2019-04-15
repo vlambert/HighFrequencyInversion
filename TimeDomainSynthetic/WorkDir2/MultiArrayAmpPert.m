@@ -11,12 +11,24 @@ Xgrid=linspace(-5,5,Ns); % potential source locations
 Xrx = zeros(sum(Nr),1);
 XrL = zeros(size(Xrx));
 L=50; % Max receiver distance from source location
-% First array
-Xrx(1:Nr(1))=linspace(4,7,Nr(1)); %receiver location
-XrL(1:Nr(1))= L-0.8*Xrx(1:Nr(1));
+% First array (A)
+Xrx(1:Nr(1))=L+4*ones(Nr(1),1); %receiver location
+XrL(1:Nr(1))= linspace(-2,2,Nr(1));
+% Xrx(1:Nr(1))=linspace(4,7,Nr(1)); %receiver location
+% XrL(1:Nr(1))= L-0.8*Xrx(1:Nr(1));
 % Second array
+
+% B2
 Xrx(Nr(1)+1:sum(Nr)) = linspace(-4,-7,Nr(2));
 XrL(Nr(1)+1:sum(Nr)) = L+0.8*Xrx(Nr(1)+1:sum(Nr));
+
+% Bopt
+Xrx(Nr(1)+1:sum(Nr)) = linspace(-2,2,Nr(2));
+XrL(Nr(1)+1:sum(Nr)) = L;%+0.8*Xrx(Nr(1)+1:sum(Nr));
+
+% B1
+% Xrx(Nr(1)+1:sum(Nr)) = linspace(4,7,Nr(2));
+% XrL(Nr(1)+1:sum(Nr)) = L-0.8*Xrx(Nr(1)+1:sum(Nr));
 
 %% Set up source subevents
 t=-1:0.01:4;
@@ -158,7 +170,7 @@ end
 box on;
 ylim([-1 2*Nr(1)+5])
 xlabel('Time (s)')
-
+return
 %%
 
 Data = Data2;
@@ -262,6 +274,7 @@ subplot(2,1,1)
 h=pcolor(Xgrid,Xgrid,Misfit1); hold on;
 %plot(Xgrid,Misfit(:,1));
 set(h, 'EdgeColor', 'none');
+xticks([-5:5]);
 colorbar;
 %caxis([0 60])
 axis square
@@ -276,6 +289,7 @@ h=pcolor(Xgrid,Xgrid,Misfit2); hold on;
 %plot(Xgrid,Misfit(:,1));
 set(h, 'EdgeColor', 'none');
 colorbar;
+xticks([-5:5]);
 %caxis([0 60])
 axis square
 box on;
@@ -288,6 +302,7 @@ figure(4); clf;
 h=pcolor(Xgrid,Xgrid,Misfitc); hold on;
 %plot(Xgrid,Misfit(:,1));
 set(h, 'EdgeColor', 'none');
+xticks([-5:5]);
 colorbar;
 %caxis([0 60])
 axis square
